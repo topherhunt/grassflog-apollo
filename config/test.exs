@@ -4,15 +4,15 @@ use Mix.Config
 # you can enable the server option below.
 config :grassflog, GrassflogWeb.Endpoint,
   http: [port: 4002],
-  server: false
+  server: true
 
 # Print only warnings and errors during test
 config :logger, level: :warn
 
 # Configure your database
 config :grassflog, Grassflog.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "grassflog_test",
-  hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  # long timeout to allow debugging in tests
+  ownership_timeout: 20 * 60 * 1000
+
+config :hound, driver: "chrome_driver", browser: "chrome_headless"

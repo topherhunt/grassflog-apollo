@@ -1,3 +1,18 @@
 /* This file is for your main application css. */
 
-@import "./phoenix.css";
+/*
+3rd-party CSS
+*/
+
+/* For now, just import the compiled Bootstrap css.
+When I want SCSS support or want to customize the default colors,
+see: https://getbootstrap.com/docs/4.0/getting-started/webpack/
+TODO: Does Webpack offer a less miserable way to include css from packages? */
+@import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+/*
+Custom CSS
+*/
+
+@import "./layout.css";
+@import "./icons.css";

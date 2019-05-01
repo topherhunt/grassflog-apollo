@@ -42,7 +42,11 @@ defmodule Grassflog.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:timex, "~> 3.5"},
+      {:ueberauth, "~> 0.6"},
+      {:ueberauth_auth0, "~> 0.3"},
+      {:hound, "~> 1.0", only: :test}
     ]
   end
 
