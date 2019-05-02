@@ -46,7 +46,8 @@ defmodule Grassflog.MixProject do
       {:timex, "~> 3.5"},
       {:ueberauth, "~> 0.6"},
       {:ueberauth_auth0, "~> 0.3"},
-      {:hound, "~> 1.0", only: :test}
+      {:hound, "~> 1.0", only: :test},
+      {:logger_file_backend, "~> 0.0", only: :test}
     ]
   end
 

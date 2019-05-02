@@ -20,6 +20,7 @@ defmodule GrassflogWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       alias GrassflogWeb.Router.Helpers, as: Routes
+      alias Grassflog.Factory
 
       # The default endpoint for testing
       @endpoint GrassflogWeb.Endpoint
@@ -33,6 +34,7 @@ defmodule GrassflogWeb.ConnCase do
       Ecto.Adapters.SQL.Sandbox.mode(Grassflog.Repo, {:shared, self()})
     end
 
+    System.put_env("FORCE_LOGIN_PASSWORD", "force_login_password")
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

@@ -6,8 +6,15 @@ config :grassflog, GrassflogWeb.Endpoint,
   http: [port: 4002],
   server: true
 
-# Print only warnings and errors during test
-config :logger, level: :warn
+# Log ALL messages, but route them to a logfile
+config :logger,
+  backends: [{LoggerFileBackend, :test_log}]
+
+config :logger, :test_log,
+  path: "log/test.log",
+  # format: "$date $time $metadata[$level] $message\n",
+  # :debug for ALL queries etc; :brief for only the basics
+  level: :debug
 
 # Configure your database
 config :grassflog, Grassflog.Repo,

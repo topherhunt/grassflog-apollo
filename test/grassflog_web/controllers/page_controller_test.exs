@@ -1,8 +1,10 @@
-defmodule GrassflogWeb.PageControllerTest do
+defmodule GrassflogWeb.HomeControllerTest do
   use GrassflogWeb.ConnCase
 
-  test "GET /", %{conn: conn} do
-    conn = get(conn, "/")
-    assert html_response(conn, 200) =~ "Welcome to Phoenix!"
+  describe "#index" do
+    test "renders correctly", %{conn: conn} do
+      conn = get(conn, Routes.home_path(conn, :index))
+      assert conn.resp_body =~ "test-page-home-index"
+    end
   end
 end

@@ -1,4 +1,4 @@
-defmodule GrassflogWeb.PageController do
+defmodule GrassflogWeb.HomeController do
   use GrassflogWeb, :controller
 
   def index(conn, _params) do
