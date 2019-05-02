@@ -11,10 +11,6 @@ defmodule GrassflogWeb.Router do
     plug :load_current_user
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
-
   scope "/", GrassflogWeb do
     pipe_through :browser
 
@@ -30,8 +26,22 @@ defmodule GrassflogWeb.Router do
     end
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", GrassflogWeb do
-  #   pipe_through :api
-  # end
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
+  scope "/api" do
+    pipe_through :api
+
+    forward "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: GrassflogWeb.Graphql.Schema,
+      json_codec: Jason
+
+    # See https://hexdocs.pm/absinthe/plug-phoenix.html
+    forward "/", Absinthe.Plug,
+      schema: GrassflogWeb.Graphql.Schema,
+      json_codec: Jason
+
+
+  end
 end
