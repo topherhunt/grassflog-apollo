@@ -2,14 +2,18 @@ defmodule Grassflog.Orgs.User do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query, warn: false
+  alias Grassflog.Orgs
 
   schema "users" do
     field :name, :string
     field :email, :string
     field :auth0_uid, :string
     field :last_signed_in_at, :naive_datetime
-
     timestamps()
+
+    has_many :org_user_joins, Orgs.OrgUserJoin
+    has_many :orgs, through: [:org_user_joins, :org]
+    has_many :proposals, Orgs.Proposal, foreign_key: :proposer_id
   end
 
   def changeset(user, attrs) do
