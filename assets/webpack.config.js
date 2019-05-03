@@ -6,30 +6,35 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = (env, options) => ({
-  optimization: {
-    minimizer: [
-      new UglifyJsPlugin({ cache: true, parallel: true, sourceMap: false }),
-      new OptimizeCSSAssetsPlugin({})
-    ]
-  },
-  entry: {app: ['./js/app.js'].concat(glob.sync('./vendor/**/*.js'))},
-  output: {
-    filename: 'app.js',
-    path: path.resolve(__dirname, '../priv/static/js')
-  },
+  // TODO: Try simplifying to just a single path (app.js)
+  // Orig: {app: ['./js/app.js'].concat(glob.sync('./vendor/**/*.js'))}
+  entry: './js/app.js',
   module: {
+    // Specifies transformation rules for each file type
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader'
+          loader: 'babel-loader',
+          // options: {presets: ["@babel/preset-env", "@babel/preset-react"]},
+          query: {presets: ["@babel/preset-react"]}
         }
       },
       {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader']
       }
+    ]
+  },
+  output: {
+    filename: 'app.js',
+    path: path.resolve(__dirname, '../priv/static/js')
+  },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({ cache: true, parallel: true, sourceMap: false }),
+      new OptimizeCSSAssetsPlugin({})
     ]
   },
   plugins: [

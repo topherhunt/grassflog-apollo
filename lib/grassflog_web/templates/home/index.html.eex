@@ -12,3 +12,7 @@ Homepage!
 <p class="text-center">
   <%= link raw("<i class=\"icon\">settings</i>"), to: "#", class: "btn btn-primary" %>
 </p>
+
+<div id="react-root" style="border: 1px solid red; border-radius: 5px;">
+
+</div>

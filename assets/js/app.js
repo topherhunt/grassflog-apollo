@@ -19,3 +19,4 @@ import "bootstrap"
 //
 
 import "./utilities"
+import "./apollo_root.jsx"

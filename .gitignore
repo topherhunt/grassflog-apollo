@@ -41,3 +41,4 @@ npm-debug.log
 # variables.
 config/secrets.exs
 .DS_Store
+*.log
