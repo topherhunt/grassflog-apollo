@@ -23,6 +23,8 @@ defmodule GrassflogWeb do
 
       import Plug.Conn
       import GrassflogWeb.Gettext
+      import GrassflogWeb.SessionPlugs, only: [must_be_logged_in: 2]
+
       alias GrassflogWeb.Router.Helpers, as: Routes
     end
   end

@@ -11,9 +11,17 @@ defmodule Grassflog.Orgs.OrgUserJoin do
     timestamps()
   end
 
-  def changeset(org, attrs) do
-    org
-    |> cast(attrs, [:org_id, :user_id, :is_admin])
+  def changeset(join, attrs) do
+    join
+    |> cast(attrs, [:is_admin])
     |> validate_required([:org_id, :user_id])
+  end
+
+  #
+  # Filters
+  #
+
+  def filter(starting_query, filters) do
+    Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
   end
 end

@@ -10,8 +10,8 @@ defmodule Grassflog.Orgs.Domain do
     timestamps()
   end
 
-  def changeset(org, attrs) do
-    org
+  def changeset(domain, attrs) do
+    domain
     |> cast(attrs, [:role_id, :name])
     |> validate_required([:role_id, :name])
   end

@@ -10,8 +10,8 @@ defmodule Grassflog.Orgs.Accountability do
     timestamps()
   end
 
-  def changeset(org, attrs) do
-    org
+  def changeset(acct, attrs) do
+    acct
     |> cast(attrs, [:role_id, :name])
     |> validate_required([:role_id, :name])
   end

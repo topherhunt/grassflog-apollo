@@ -32,6 +32,7 @@ defmodule GrassflogWeb.SessionPlugs do
   end
 
   # Deny access to this page unless a user is logged in
+  # TODO: These belong in SentryPlugs
   def must_be_logged_in(conn, _opts) do
     if current_user_assigned?(conn) do
       conn

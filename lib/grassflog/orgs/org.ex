@@ -28,9 +28,9 @@ defmodule Grassflog.Orgs.Org do
   # Filters
   #
 
-  # def filter(starting_query, filters) do
-  #   Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
-  # end
+  def filter(starting_query, filters) do
+    Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
+  end
   #
   # def filter(query, :id, id), do: where(query, [u], u.id == ^id)
   # def filter(query, :email, email), do: where(query, [u], u.email == ^email)

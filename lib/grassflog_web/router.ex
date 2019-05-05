@@ -24,6 +24,8 @@ defmodule GrassflogWeb.Router do
       get "/logout", AuthController, :logout
       get "/force_login/:id/:password", AuthController, :force_login
     end
+
+    resources "/orgs", OrgController
   end
 
   pipeline :api do

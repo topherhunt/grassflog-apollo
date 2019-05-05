@@ -18,9 +18,18 @@ defmodule Grassflog.Orgs.Role do
   end
 
   # TODO: Split into user-facing vs. admin-facing changeset
-  def changeset(org, attrs) do
-    org
-    |> cast(attrs, [:org_id, :circle_id, :name, :is_circle])
+  def changeset(role, attrs) do
+    role
+    |> cast(attrs, [:circle_id, :name, :is_circle])
     |> validate_required([:org_id, :name])
+    # TODO: Validate that there can only be one anchor circle per org?
+  end
+
+  #
+  # Filters
+  #
+
+  def filter(starting_query, filters) do
+    Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
   end
 end

@@ -16,8 +16,8 @@ defmodule Grassflog.Orgs.ProposalChange do
 
   # TODO: Find a way to separate the "defining" fields vs the "mutable" fields.
   # Maybe create_changeset vs. update_changeset?
-  def changeset(org, attrs) do
-    org
+  def changeset(proposal_change, attrs) do
+    proposal_change
     |> cast(attrs, [:proposal_id, :type, :payload, :enacted_at])
     |> validate_required([:proposal_id, :type, :payload, :enacted_at])
     |> validate_inclusion(:type, @valid_types)
