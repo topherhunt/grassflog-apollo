@@ -6,8 +6,10 @@ defmodule Grassflog.Orgs.Role do
 
   schema "roles" do
     belongs_to :org, Orgs.Org
+    # TODO: I think this should be renamed to parent to minimize confusion
     belongs_to :circle, Orgs.Role
     field :name, :string
+    field :purpose, :string
     field :is_circle, :boolean
     timestamps()
 
@@ -20,7 +22,7 @@ defmodule Grassflog.Orgs.Role do
   # TODO: Split into user-facing vs. admin-facing changeset
   def changeset(role, attrs) do
     role
-    |> cast(attrs, [:circle_id, :name, :is_circle])
+    |> cast(attrs, [:circle_id, :name, :purpose, :is_circle])
     |> validate_required([:org_id, :name])
     # TODO: Validate that there can only be one anchor circle per org?
   end
@@ -35,4 +37,7 @@ defmodule Grassflog.Orgs.Role do
 
   def filter(query, :id, id), do: where(query, [r], r.id == ^id)
   def filter(query, :org, org), do: where(query, [r], r.org_id == ^org.id)
+  def filter(query, :parent, parent), do: where(query, [r], r.circle_id == ^parent.id)
+  def filter(query, :preload, preloads), do: preload(query, ^preloads)
+  def filter(query, :order, :id), do: order_by(query, [r], asc: r.id)
 end

@@ -16,19 +16,19 @@ defmodule Grassflog.Factory do
   end
 
   def insert_role(opts) do
-    allow_opts(opts, [:org, :parent, :name])
+    allow_opts(opts, [:org, :parent, :name, :purpose])
     org = opts[:org] || raise("org is required")
     parent = opts[:parent] || raise("parent is required")
     name = opts[:name] || "Role #{random_uuid()}"
-    Orgs.insert_role!(org, %{circle_id: parent.id, name: name})
+    Orgs.insert_role!(org, %{circle_id: parent.id, name: name, purpose: opts[:purpose]})
   end
 
   def insert_circle(opts) do
-    allow_opts(opts, [:org, :parent, :name])
+    allow_opts(opts, [:org, :parent, :name, :purpose])
     org = opts[:org] || raise("org is required")
     parent = opts[:parent] || raise("parent is required")
     name = opts[:name] || "Circle #{random_uuid()}"
-    Orgs.insert_circle!(org, %{circle_id: parent.id, name: name})
+    Orgs.insert_circle!(org, %{circle_id: parent.id, name: name, purpose: opts[:purpose]})
   end
 
   def insert_domain(opts) do

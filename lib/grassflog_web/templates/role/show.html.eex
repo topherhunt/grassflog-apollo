@@ -1,0 +1,57 @@
+<div class="test-page-role-show-<%= @role.id %>"></div>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><%= link @org.name, to: Routes.org_path(@conn, :show, @org) %></li>
+    <%= if @role.circle do %>
+      <li class="breadcrumb-item"><%= link @role.circle.name, to: Routes.org_role_path(@conn, :show, @org, @role.circle) %></li>
+    <% end %>
+    <li class="breadcrumb-item active" style="max-width: 300px;">
+      <%= @role.name %>
+    </li>
+  </ol>
+</nav>
+
+<h1><%= @role.name %></h1>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="u-card ">
+      <h4>Purpose</h4>
+      <%= if @role.purpose do %>
+        <%= @role.purpose %>
+      <% else %>
+        <p class="em text-muted">No purpose defined yet</p>
+      <% end %>
+
+
+      <h4>Domains</h4>
+      <ul>
+        <%= for d <- @domains do %>
+          <li><%= d.name %></li>
+        <% end %>
+      </ul>
+
+      <h4>Accountabilities</h4>
+      <ul>
+        <%= for a <- @accts do %>
+          <li><%= a.name %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <%= if length(@children) > 0 do %>
+      <div class="u-card ">
+        <h4>Roles</h4>
+        <ul>
+          <%= for child <- @children do %>
+            <li><%= link child.name, to: Routes.org_role_path(@conn, :show, @org, child) %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</div>
+

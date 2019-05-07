@@ -8,4 +8,4 @@
 
 <div class="u-card">org chart (TODO)</div>
 
-<p><%= link @org.anchor_circle.name, to: "#TODO" %></p>
+<p><%= link @org.anchor_circle.name, to: Routes.org_role_path(@conn, :show, @org, @org.anchor_circle) %></p>
