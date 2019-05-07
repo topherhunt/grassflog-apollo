@@ -12,7 +12,10 @@
   </ol>
 </nav>
 
-<h1><%= @role.name %></h1>
+<div class="float-left"><h1><%= @role.name %></h1></div>
+<div class="float-right">Blah</div>
+
+<div class="clearfix"></div>
 
 <div class="row">
   <div class="col-md-6">

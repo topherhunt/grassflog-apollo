@@ -1,4 +1,11 @@
 <div class="test-page-org-show-<%= @org.id %>"></div>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active"><%= @org.name %></li>
+  </ol>
+</nav>
+
 <div>
   <span class="h1"><%= @org.name %></span>
   &nbsp;
