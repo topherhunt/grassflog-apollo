@@ -5,7 +5,7 @@ defmodule GrassflogWeb.RoleController do
   plug :load_org
   plug :load_role
 
-  def show(conn, %{"id" => id}) do
+  def show(conn, _params) do
     role = conn.assigns.role
     children = Orgs.get_roles(parent: role, order: :id)
     domains = Orgs.get_domains(role: role, order: :id)
@@ -23,7 +23,7 @@ defmodule GrassflogWeb.RoleController do
   end
 
   defp load_role(conn, _) do
-    role = Orgs.get_role!(conn.params["id"], org: conn.assigns.org, preload: :circle)
+    role = Orgs.get_role!(conn.params["id"], org: conn.assigns.org, preload: :parent)
     assign(conn, :role, role)
   end
 end

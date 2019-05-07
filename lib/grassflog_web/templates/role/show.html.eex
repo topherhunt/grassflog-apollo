@@ -3,8 +3,8 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><%= link @org.name, to: Routes.org_path(@conn, :show, @org) %></li>
-    <%= if @role.circle do %>
-      <li class="breadcrumb-item"><%= link @role.circle.name, to: Routes.org_role_path(@conn, :show, @org, @role.circle) %></li>
+    <%= if @role.parent do %>
+      <li class="breadcrumb-item"><%= link @role.parent.name, to: Routes.org_role_path(@conn, :show, @org, @role.parent) %></li>
     <% end %>
     <li class="breadcrumb-item active" style="max-width: 300px;">
       <%= @role.name %>
