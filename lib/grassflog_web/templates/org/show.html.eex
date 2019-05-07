@@ -1,0 +1,11 @@
+<div class="test-page-org-show-<%= @org.id %>"></div>
+<div>
+  <span class="h1"><%= @org.name %></span>
+  &nbsp;
+  <%= link raw("<i class=\"icon\">edit</i>"), to: Routes.org_path(@conn, :edit, @org), class: "" %>
+</div>
+
+
+<div class="u-card">org chart (TODO)</div>
+
+<p><%= link @org.anchor_circle.name, to: "#TODO" %></p>

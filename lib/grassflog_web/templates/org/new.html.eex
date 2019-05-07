@@ -1,0 +1,9 @@
+<div class="test-page-org-new"></div>
+
+<div class="u-centered-600 u-card">
+  <h1>New organization</h1>
+
+  <%= render "_form.html",
+    changeset: @changeset,
+    path: Routes.org_path(@conn, :create) %>
+</div>

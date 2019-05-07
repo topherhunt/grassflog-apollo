@@ -1,4 +1,14 @@
-/* Copied from  https://google.github.io/material-design-icons/#icon-font-for-the-web */
+/*
+  Google Material Design iconset
+
+  * Usage: <i class="icon">face</i>
+  * Reference: https://material.io/tools/icons/?style=baseline
+  * Download the woff2 from: https://github.com/google/material-design-icons/
+    and save it in assets/static/fonts/ (see Plug.Static config for allowed paths)
+  * CSS is from: https://google.github.io/material-design-icons/#icon-font-for-the-web
+
+  Usage: <i class="icon">face</i>
+*/
 
 @font-face {
   font-family: 'Material Icons';

@@ -1,0 +1,15 @@
+<div class="test-page-org-edit-<%= @org.id %>"></div>
+
+<div class="u-centered-600 u-card">
+  <h1>Edit organization</h1>
+
+  <%= render "_form.html",
+    changeset: @changeset,
+    path: Routes.org_path(@conn, :update, @org) %>
+
+  <hr/>
+
+  <div class="text-right">
+    <%= link "delete", to: Routes.org_path(@conn, :delete, @org), class: "text-danger", data_confirm: "This will permanently delete the organization \"#{@org.id}\" and ALL of its data. Proceed?" %>
+  </div>
+</div>

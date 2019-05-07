@@ -1,7 +1,7 @@
 defmodule Grassflog.Orgs do
   import Ecto.Query, warn: false
   alias Grassflog.Repo
-  alias Grassflog.Orgs.{User, Org, OrgUserJoin, Role}
+  alias Grassflog.Orgs.{User, Org, OrgUserJoin, Role, Domain, Accountability}
 
   #
   # Users
@@ -21,11 +21,11 @@ defmodule Grassflog.Orgs do
 
   def insert_user(params), do: new_user_changeset(params) |> Repo.insert()
 
-  def insert_user!(params), do: new_user_changeset(params) |> Repo.insert!()
+  def insert_user!(params), do: insert_user(params) |> ensure_success()
 
   def update_user(user, params), do: user_changeset(user, params) |> Repo.update()
 
-  def update_user!(user, params), do: user_changeset(user, params) |> Repo.update!()
+  def update_user!(user, params), do: update_user(user, params) |> ensure_success()
 
   def delete_user!(user), do: Repo.delete!(user)
 
@@ -49,18 +49,23 @@ defmodule Grassflog.Orgs do
 
   def count_orgs(filt \\ []), do: Org |> Org.filter(filt) |> Repo.count()
 
-  def insert_org(params), do: new_org_changeset(params) |> Repo.insert()
+  def insert_org(params) do
+    case Repo.insert(new_org_changeset(params)) do
+      {:ok, org} ->
+        anchor = insert_circle!(org, %{circle_id: nil, name: "Anchor Circle"})
+        org = update_org!(org, %{anchor_circle_id: anchor.id})
+        {:ok, org}
 
-  def insert_org_starting_structure!(org) do
-    anchor = insert_role!(org, %{circle_id: nil, name: "Anchor circle", is_circle: true})
-    insert_role!(org, %{circle_id: anchor.id, name: "Facilitator"})
-    insert_role!(org, %{circle_id: anchor.id, name: "Secretary"})
-    update_org!(org, %{anchor_circle_id: anchor.id})
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
+
+  def insert_org!(params), do: insert_org(params) |> ensure_success()
 
   def update_org(org, params), do: org_changeset(org, params) |> Repo.update()
 
-  def update_org!(org, params), do: org_changeset(org, params) |> Repo.update!()
+  def update_org!(org, params), do: update_org(org, params) |> ensure_success()
 
   def delete_org!(org), do: Repo.delete!(org)
 
@@ -72,9 +77,9 @@ defmodule Grassflog.Orgs do
   # OrgUserJoins
   #
 
-  def insert_org_user_join!(org, user, params) do
+  def add_org_member!(org, user, opts \\ []) do
     %OrgUserJoin{org_id: org.id, user_id: user.id}
-    |> OrgUserJoin.changeset(params)
+    |> OrgUserJoin.changeset(%{is_admin: !!opts[:is_admin]})
     |> Repo.insert!()
   end
 
@@ -106,26 +111,97 @@ defmodule Grassflog.Orgs do
     %Role{org_id: org.id} |> Role.changeset(params) |> Repo.insert()
   end
 
-  def insert_role!(org, params), do: insert_role(org, params) |> assert_succeeded()
+  def insert_role!(org, params), do: insert_role(org, params) |> ensure_success()
 
   def update_role(role, params), do: role_changeset(role, params) |> Repo.update()
 
-  def update_role!(role, params), do: role_changeset(role, params) |> Repo.update!()
+  def update_role!(role, params), do: update_role(role, params) |> ensure_success()
 
   def delete_role!(role), do: Repo.delete!(role)
 
-  # def new_role_changeset(changes \\ %{}), do: Role.changeset(%Role{}, changes)
-
   def role_changeset(role, changes \\ %{}), do: Role.changeset(role, changes)
+
+  #
+  # Circles (a special type of Role)
+  #
+
+  def insert_circle!(org, params) do
+    circle = insert_role!(org, Map.merge(params, %{is_circle: true}))
+    insert_role!(org, %{circle_id: circle.id, name: "Facilitator"})
+    insert_role!(org, %{circle_id: circle.id, name: "Secretary"})
+    circle
+  end
+
+  #
+  # Domains
+  #
+
+  def get_domain(id, filt \\ []), do: get_domain_by(Keyword.merge([id: id], filt))
+
+  def get_domain!(id, filt \\ []), do: get_domain_by!(Keyword.merge([id: id], filt))
+
+  def get_domain_by(filt), do: Domain |> Domain.filter(filt) |> Repo.first()
+
+  def get_domain_by!(filt), do: Domain |> Domain.filter(filt) |> Repo.first!()
+
+  def get_domains(filt \\ []), do: Domain |> Domain.filter(filt) |> Repo.all()
+
+  def count_domains(filt \\ []), do: Domain |> Domain.filter(filt) |> Repo.count()
+
+  def insert_domain(params), do: new_domain_changeset(params) |> Repo.insert()
+
+  def insert_domain!(params), do: insert_domain(params) |> ensure_success()
+
+  def update_domain(domain, params), do: domain_changeset(domain, params) |> Repo.update()
+
+  def update_domain!(domain, params), do: update_domain(domain, params) |> ensure_success()
+
+  def delete_domain!(domain), do: Repo.delete!(domain)
+
+  def new_domain_changeset(changes \\ %{}), do: Domain.changeset(%Domain{}, changes)
+
+  def domain_changeset(domain, changes \\ %{}), do: Domain.changeset(domain, changes)
+
+  #
+  # Accountabilities
+  #
+
+  alias Accountability, as: Acct
+
+  def get_acct(id, filt \\ []), do: get_acct_by(Keyword.merge([id: id], filt))
+
+  def get_acct!(id, filt \\ []), do: get_acct_by!(Keyword.merge([id: id], filt))
+
+  def get_acct_by(filt), do: Acct |> Acct.filter(filt) |> Repo.first()
+
+  def get_acct_by!(filt), do: Acct |> Acct.filter(filt) |> Repo.first!()
+
+  def get_accts(filt \\ []), do: Acct |> Acct.filter(filt) |> Repo.all()
+
+  def count_accts(filt \\ []), do: Acct |> Acct.filter(filt) |> Repo.count()
+
+  def insert_acct(params), do: new_acct_changeset(params) |> Repo.insert()
+
+  def insert_acct!(params), do: insert_acct(params) |> ensure_success()
+
+  def update_acct(acct, params), do: acct_changeset(acct, params) |> Repo.update()
+
+  def update_acct!(acct, params), do: update_acct(acct, params) |> ensure_success()
+
+  def delete_acct!(acct), do: Repo.delete!(acct)
+
+  def new_acct_changeset(changes \\ %{}), do: Acct.changeset(%Acct{}, changes)
+
+  def acct_changeset(acct, changes \\ %{}), do: Acct.changeset(acct, changes)
 
   #
   # Internal helpers
   #
 
-  defp assert_succeeded({code, _} = result) do
-    case code do
-      :ok -> result
-      :error -> raise Ecto.InvalidChangesetError, result: result
+  defp ensure_success(result) do
+    case result do
+      {:ok, object} -> object
+      {:error, changeset} -> raise Ecto.InvalidChangesetError, changeset: changeset
     end
   end
 

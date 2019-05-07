@@ -19,6 +19,7 @@ defmodule GrassflogWeb.ConnCase do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
+      import GrassflogWeb.ConnHelpers
       alias GrassflogWeb.Router.Helpers, as: Routes
       alias Grassflog.Factory
 

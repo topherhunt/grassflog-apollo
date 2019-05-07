@@ -32,4 +32,7 @@ defmodule Grassflog.Orgs.Role do
   def filter(starting_query, filters) do
     Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
   end
+
+  def filter(query, :id, id), do: where(query, [r], r.id == ^id)
+  def filter(query, :org, org), do: where(query, [r], r.org_id == ^org.id)
 end

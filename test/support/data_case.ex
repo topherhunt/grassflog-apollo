@@ -16,12 +16,13 @@ defmodule Grassflog.DataCase do
 
   using do
     quote do
-      alias Grassflog.Repo
-
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import Grassflog.DataCase
+
+      alias Grassflog.Repo
+      alias Grassflog.Factory
     end
   end
 

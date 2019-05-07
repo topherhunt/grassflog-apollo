@@ -24,4 +24,8 @@ defmodule Grassflog.Orgs.OrgUserJoin do
   def filter(starting_query, filters) do
     Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
   end
+
+  def filter(query, :org, org), do: where(query, [j], j.org_id == ^org.id)
+  def filter(query, :user, user), do: where(query, [j], j.user_id == ^user.id)
+  def filter(query, :is_admin, bool), do: where(query, [j], j.is_admin == ^bool)
 end

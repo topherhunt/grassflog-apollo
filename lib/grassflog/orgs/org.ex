@@ -11,10 +11,10 @@ defmodule Grassflog.Orgs.Org do
     belongs_to :anchor_circle, Orgs.Role
     timestamps()
 
-    has_many :org_user_joins, Org.OrgUserJoin
+    has_many :org_user_joins, Orgs.OrgUserJoin
     has_many :members, through: [:org_user_joins, :user]
-    has_many :roles, Org.Role
-    has_many :proposals, Org.Proposal
+    has_many :roles, Orgs.Role
+    has_many :proposals, Orgs.Proposal
   end
 
   def changeset(org, attrs) do
@@ -31,10 +31,12 @@ defmodule Grassflog.Orgs.Org do
   def filter(starting_query, filters) do
     Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
   end
-  #
-  # def filter(query, :id, id), do: where(query, [u], u.id == ^id)
-  # def filter(query, :email, email), do: where(query, [u], u.email == ^email)
-  # def filter(query, :auth0_uid, uid), do: where(query, [u], u.auth0_uid == ^uid)
-  # def filter(query, :order, :name), do: order_by(query, [u], asc: u.name)
 
+  def filter(query, :id, id), do: where(query, [o], o.id == ^id)
+  def filter(query, :order, :newest), do: order_by(query, [u], desc: u.id)
+  def filter(query, :preload, :anchor_circle), do: preload(query, :anchor_circle)
+
+  def filter(query, :having_member, user) do
+    where(query, [o], fragment("EXISTS (SELECT * FROM org_user_joins WHERE org_id = ? AND user_id = ?)", o.id, ^user.id))
+  end
 end

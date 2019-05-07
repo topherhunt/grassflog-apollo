@@ -1,0 +1,10 @@
+<div class="test-page-org-index"></div>
+<h1>My organizations</h1>
+
+<%= for org <- @orgs do %>
+  <div class="u-card">
+    <h4><%= link org.name, to: Routes.org_path(@conn, :show, org) %></h4>
+  </div>
+<% end %>
+
+<p><%= link "Create an organization", to: Routes.org_path(@conn, :new) %></p>

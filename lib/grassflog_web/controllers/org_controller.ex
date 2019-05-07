@@ -6,13 +6,13 @@ defmodule GrassflogWeb.OrgController do
   plug :load_org          when action in [:show, :edit, :update, :delete]
   plug :must_be_org_admin when action in [:edit, :update, :delete]
 
-  # Lists all orgs that I'm a member of. Rarely used.
   def index(conn, _params) do
-    render conn, "index.html"
+    orgs = Orgs.get_orgs(having_member: conn.assigns.current_user)
+    render conn, "index.html", orgs: orgs
   end
 
   def show(conn, %{"id" => id}) do
-    render conn, "show.html", org: Orgs.get_org!(id)
+    render conn, "show.html", org: Orgs.get_org!(id, preload: :anchor_circle)
   end
 
   def new(conn, _params) do
@@ -23,8 +23,7 @@ defmodule GrassflogWeb.OrgController do
   def create(conn, %{"org" => org_params}) do
     case Orgs.insert_org(org_params) do
       {:ok, org} ->
-        Orgs.insert_org_starting_structure!(org)
-        Orgs.insert_org_user_join!(org, conn.assigns.current_user, %{is_admin: true})
+        Orgs.add_org_member!(org, conn.assigns.current_user, is_admin: true)
 
         conn
         |> put_flash(:info, "Organization created.")

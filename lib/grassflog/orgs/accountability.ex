@@ -15,4 +15,14 @@ defmodule Grassflog.Orgs.Accountability do
     |> cast(attrs, [:role_id, :name])
     |> validate_required([:role_id, :name])
   end
+
+  #
+  # Filters
+  #
+
+  def filter(starting_query, filters) do
+    Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
+  end
+
+  def filter(query, :id, id), do: where(query, [a], a.id == ^id)
 end
