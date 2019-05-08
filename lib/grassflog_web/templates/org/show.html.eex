@@ -6,11 +6,10 @@
   </ol>
 </nav>
 
-<div>
-  <span class="h1"><%= @org.name %></span>
-  &nbsp;
-  <%= link raw("<i class=\"icon\">edit</i>"), to: Routes.org_path(@conn, :edit, @org), class: "" %>
-</div>
+<div class="float-left"><h1><%= @org.name %></h1></div>
+<div class="float-right"><%= link raw("<i class='icon'>settings</i> Organization settings"), to: Routes.org_path(@conn, :edit, @org) %></div>
+
+<div class="clearfix"></div>
 
 
 <div class="u-card">org chart (TODO)</div>

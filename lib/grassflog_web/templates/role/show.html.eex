@@ -13,7 +13,7 @@
 </nav>
 
 <div class="float-left"><h1><%= @role.name %></h1></div>
-<div class="float-right">Blah</div>
+<div class="float-right"><%= link raw("<i class='icon'>build</i> Propose a change"), to: Routes.org_path(@conn, :edit, @org) %></div>
 
 <div class="clearfix"></div>
 

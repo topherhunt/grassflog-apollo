@@ -1,3 +1,4 @@
+# A Proposal is a set of 1+ ProposalParts which describe a sequence of changes to make to the circle structure.
 defmodule Grassflog.Orgs.Proposal do
   use Ecto.Schema
   import Ecto.Changeset
