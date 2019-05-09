@@ -16,28 +16,43 @@ const updateProposalMutation = gql`
   }
 `
 
-const TensionEditor = ({proposal}) => {
-  return <Mutation mutation={updateProposalMutation}>
-    {(runMutation, {called, loading, data}) => {
-      // console.log("Mutation rendering with data: ", data)
+class TensionEditor extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {}
 
-      const updateTension = _.debounce((tension) => {
-        console.log("Running updateProposalMutation.")
-        runMutation({variables: {id: proposal.id, tension: tension}})
-      }, 200)
+    this.updateTension = _.debounce((runMutation, tension) => {
+      console.log("Running updateProposalMutation with tension: " + tension)
+      runMutation({variables: {id: this.props.proposal.id, tension: tension}})
+      this.setState({updatePending: false})
+    }, 200)
+  }
 
-      return <div className="form-group u-relative">
-        <label htmlFor="proposal_tension">The tension:</label>
-        <textarea
-          id="proposal_tension"
-          className="form-control"
-          defaultValue={proposal.tension}
-          placeholder="What's the pain you're feeling? Why bother making this change?"
-          onChange={(e) => { updateTension(e.target.value) }}
-        ></textarea>
-      </div>
-    }}
-  </Mutation>
+  render() {
+    return <Mutation mutation={updateProposalMutation}>
+      {(runMutation, {called, loading, data}) => {
+        // console.log("Mutation rendering with data: ", data)
+        return <div className="form-group u-relative">
+          <label htmlFor="proposal_tension">The tension:</label>
+          <textarea
+            id="proposal_tension"
+            className="form-control"
+            defaultValue={this.props.proposal.tension}
+            placeholder="What's the pain you're feeling? Why bother making this change?"
+            onChange={(e) => {
+              this.setState({updatePending: true})
+              this.updateTension(runMutation, e.target.value)
+            }}
+          ></textarea>
+          <div style={{position: "absolute", right: "10px", top: "10px"}}>
+            {(this.state.updatePending
+              ? <span className="text-warning">saving...</span>
+              : <span className="text-success">√</span>)}
+          </div>
+        </div>
+      }}
+    </Mutation>
+  }
 }
 
 export default TensionEditor
