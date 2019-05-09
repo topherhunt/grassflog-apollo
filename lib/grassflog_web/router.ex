@@ -46,7 +46,5 @@ defmodule GrassflogWeb.Router do
     forward "/", Absinthe.Plug,
       schema: GrassflogWeb.Graphql.Schema,
       json_codec: Jason
-
-
   end
 end

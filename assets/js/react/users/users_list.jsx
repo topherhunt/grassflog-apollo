@@ -4,8 +4,10 @@ import React from "react"
 import { Query } from "react-apollo"
 import { gql } from "apollo-boost"
 
+const usersQuery = gql`{users {id email lastSignedInAt name}}`
+
 const UsersList = () => (
-  <Query query={gql`{users {id email lastSignedInAt name}}`}>
+  <Query query={usersQuery}>
     {({loading, error, data}) => {
       if (loading) {
         return <p>Loading...</p>

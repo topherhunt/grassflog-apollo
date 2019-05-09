@@ -1,4 +1,5 @@
 // Inits the Apollo client, telling it where the gql api is
+// Apollo docs: https://www.apollographql.com/docs/react/essentials/queries
 
 import ApolloClient from "apollo-boost"
 import { gql } from "apollo-boost"
