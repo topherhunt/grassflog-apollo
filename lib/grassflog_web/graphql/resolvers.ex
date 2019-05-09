@@ -26,4 +26,12 @@ defmodule GrassflogWeb.Graphql.Resolvers do
       proposal -> {:ok, proposal}
     end
   end
+
+  def update_proposal(_parent, params, resolution) do
+    # Resolution context: see https://hexdocs.pm/absinthe/mutations.html#authorization
+    current_user = resolution.context.current_user
+    proposal = Orgs.Proposal.get!(params.id, proposer: current_user)
+    proposal = Orgs.Proposal.update!(proposal, %{tension: params.tension})
+    {:ok, proposal}
+  end
 end

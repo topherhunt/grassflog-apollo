@@ -31,12 +31,15 @@ defmodule GrassflogWeb.Router do
     end
   end
 
-  pipeline :api do
+  pipeline :graphql do
     plug :accepts, ["json"]
+    plug :fetch_session
+    plug :load_current_user
+    plug :set_absinthe_context
   end
 
   scope "/api" do
-    pipe_through :api
+    pipe_through :graphql
 
     forward "/graphiql", Absinthe.Plug.GraphiQL,
       schema: GrassflogWeb.Graphql.Schema,
@@ -46,5 +49,9 @@ defmodule GrassflogWeb.Router do
     forward "/", Absinthe.Plug,
       schema: GrassflogWeb.Graphql.Schema,
       json_codec: Jason
+  end
+
+  defp set_absinthe_context(conn, _) do
+    Absinthe.Plug.put_options(conn, context: %{current_user: conn.assigns.current_user})
   end
 end

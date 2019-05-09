@@ -66,4 +66,5 @@ defmodule Grassflog.Orgs.Proposal do
   def filter(query, :id, id), do: Query.where(query, [r], r.id == ^id)
   def filter(query, :org, org), do: Query.where(query, [r], r.org_id == ^org.id)
   def filter(query, :circle, circle), do: Query.where(query, [r], r.circle_id == ^circle.id)
+  def filter(query, :proposer, proposer), do: Query.where(query, [r], r.proposer_id == ^proposer.id)
 end

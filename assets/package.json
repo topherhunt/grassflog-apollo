@@ -18,7 +18,8 @@
     "react": "^16.8.6",
     "react-apollo": "^2.5.5",
     "react-dom": "^16.8.6",
-    "react-phoenix": "file:../deps/react_phoenix"
+    "react-phoenix": "file:../deps/react_phoenix",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

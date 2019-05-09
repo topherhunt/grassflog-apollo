@@ -17,4 +17,12 @@ defmodule GrassflogWeb.Graphql.Schema do
       resolve &Resolvers.get_proposal/3
     end
   end
+
+  mutation do
+    field :update_proposal, type: :proposal do
+      arg :id, non_null(:id)
+      arg :tension, non_null(:string)
+      resolve &Resolvers.update_proposal/3
+    end
+  end
 end
