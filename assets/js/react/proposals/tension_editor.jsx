@@ -22,7 +22,7 @@ class TensionEditor extends React.Component {
     this.state = {}
 
     this.updateTension = _.debounce((runMutation, tension) => {
-      console.log("Running updateProposalMutation with tension: " + tension)
+      console.log("Running updateProposalMutation.")
       runMutation({variables: {id: this.props.proposal.id, tension: tension}})
       this.setState({updatePending: false})
     }, 200)

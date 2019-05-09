@@ -12,8 +12,12 @@ const proposalQuery = gql`
     proposal(id: $id) {
       id
       tension
-      inserted_at
-      circle { id name }
+      insertedAt
+      circle {
+        id
+        name
+        children { id name }
+      }
       proposer { id name email }
     }
   }
@@ -43,13 +47,16 @@ const ShowLoading = () => <div>Loading...</div>
 const ShowError = () => <div>Error!</div>
 
 const ProposalBuilder = ({proposal}) => {
+  // TODO: Compute the simulated state starting with the actual state and executing
+  // each Part in sequence.
+  // For now, I'll just use the actual state as the simulated state.
   return <div className="u-card">
     <h1>Proposal for circle: {proposal.circle.name}</h1>
-    <div className="small text-muted">proposal id: {proposal.id}, proposer email: {proposal.proposer.email}, started at: {proposal.inserted_at}</div>
+    <div className="small text-muted">proposal id: {proposal.id}, proposer email: {proposal.proposer.email}, started at: {proposal.insertedAt}</div>
     <hr />
     <TensionEditor proposal={proposal} />
     <hr />
-    <AddProposalPartSection proposal={proposal} />
+    <AddProposalPartSection proposal={proposal} simulatedRoles={proposal.circle.children} />
   </div>
 }
 
