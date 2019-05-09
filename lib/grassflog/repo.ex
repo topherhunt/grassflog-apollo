@@ -16,4 +16,11 @@ defmodule Grassflog.Repo do
 
   # NOTE: Only works with SELECT statements
   def to_sql(query), do: Ecto.Adapters.SQL.to_sql(:all, Repo, query)
+
+  def ensure_success(result) do
+    case result do
+      {:ok, object} -> object
+      {:error, changeset} -> raise Ecto.InvalidChangesetError, changeset: changeset
+    end
+  end
 end

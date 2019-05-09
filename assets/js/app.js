@@ -11,12 +11,12 @@ import css from "../css/app.css"
 // Import dependencies
 //
 import "phoenix_html"
-
 import "bootstrap"
+import "react-phoenix"
 
 //
 // Local files
 //
 
-import "./utilities"
-import "./apollo_root.jsx"
+import "./jquery_utilities"
+import "./react/globals"

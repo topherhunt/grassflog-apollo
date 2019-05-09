@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-sm navbar-light bg-light">
-  <%= link "Grassflog", to: "#", class: "navbar-brand" %>
+  <%= link "Grassflog", to: Routes.home_path(@conn, :index), class: "navbar-brand" %>
   <button class="navbar-toggler" data-toggle="collapse" data-target="#navbar-content">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -14,7 +14,7 @@
             <i class="icon">person</i> <span class="caret"></span>
           </a>
           <div class="dropdown-menu dropdown-menu-right">
-            <div class="dropdown-item em small">Logged in as <%= @current_user.name %></div>
+            <div class="dropdown-item em small">Logged in as <%= @current_user.email %></div>
             <%= link "Organizations", to: Routes.org_path(@conn, :index), class: "dropdown-item" %>
             <%= link "Log out", to: Routes.auth_path(@conn, :logout), class: "dropdown-item text-danger" %>
           </div>

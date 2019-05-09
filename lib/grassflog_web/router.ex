@@ -27,6 +27,7 @@ defmodule GrassflogWeb.Router do
 
     resources "/orgs", OrgController do
       resources "/roles", RoleController, only: [:show]
+      resources "/proposals", ProposalController, only: [:index, :new, :edit]
     end
   end
 

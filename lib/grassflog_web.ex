@@ -42,6 +42,7 @@ defmodule GrassflogWeb do
       use Phoenix.HTML
 
       import GrassflogWeb.ErrorHelpers
+      import ReactPhoenix.ClientSide
       import GrassflogWeb.Gettext
       alias GrassflogWeb.Router.Helpers, as: Routes
     end

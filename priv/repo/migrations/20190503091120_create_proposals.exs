@@ -6,7 +6,7 @@ defmodule Grassflog.Repo.Migrations.CreateProposals do
       add :org_id, references(:orgs, on_delete: :delete_all), null: false
       add :circle_id, references(:roles, on_delete: :delete_all), null: false
       add :proposer_id, references(:users, on_delete: :delete_all), null: false
-      add :tension, :string, null: false
+      add :tension, :string
       timestamps()
       add :enacted_at, :naive_datetime
     end

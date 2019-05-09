@@ -4,7 +4,7 @@ import React from "react"
 import { Query } from "react-apollo"
 import { gql } from "apollo-boost"
 
-const UsersListComponent = () => (
+const UsersList = () => (
   <Query query={gql`{users {id email lastSignedInAt name}}`}>
     {({loading, error, data}) => {
       if (loading) {
@@ -24,4 +24,4 @@ const UsersListComponent = () => (
   </Query>
 )
 
-export default UsersListComponent
+export default UsersList

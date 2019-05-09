@@ -49,7 +49,8 @@ defmodule Grassflog.MixProject do
       {:hound, "~> 1.0", only: :test},
       {:logger_file_backend, "~> 0.0", only: :test},
       {:absinthe, "~> 1.4"},
-      {:absinthe_plug, "~> 1.4"}
+      {:absinthe_plug, "~> 1.4"},
+      {:react_phoenix, "~> 1.0"}
     ]
   end
 

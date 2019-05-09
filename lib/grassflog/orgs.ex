@@ -3,6 +3,8 @@ defmodule Grassflog.Orgs do
   alias Grassflog.Repo
   alias Grassflog.Orgs.{User, Org, OrgUserJoin, Role, Domain, Accountability}
 
+  # TODO: Try moving all of these crud helpers into the relevant schema module
+
   #
   # Users
   #
@@ -21,11 +23,11 @@ defmodule Grassflog.Orgs do
 
   def insert_user(params), do: new_user_changeset(params) |> Repo.insert()
 
-  def insert_user!(params), do: insert_user(params) |> ensure_success()
+  def insert_user!(params), do: insert_user(params) |> Repo.ensure_success()
 
   def update_user(user, params), do: user_changeset(user, params) |> Repo.update()
 
-  def update_user!(user, params), do: update_user(user, params) |> ensure_success()
+  def update_user!(user, params), do: update_user(user, params) |> Repo.ensure_success()
 
   def delete_user!(user), do: Repo.delete!(user)
 
@@ -61,11 +63,11 @@ defmodule Grassflog.Orgs do
     end
   end
 
-  def insert_org!(params), do: insert_org(params) |> ensure_success()
+  def insert_org!(params), do: insert_org(params) |> Repo.ensure_success()
 
   def update_org(org, params), do: org_changeset(org, params) |> Repo.update()
 
-  def update_org!(org, params), do: update_org(org, params) |> ensure_success()
+  def update_org!(org, params), do: update_org(org, params) |> Repo.ensure_success()
 
   def delete_org!(org), do: Repo.delete!(org)
 
@@ -111,11 +113,11 @@ defmodule Grassflog.Orgs do
     %Role{org_id: org.id} |> Role.changeset(params) |> Repo.insert()
   end
 
-  def insert_role!(org, params), do: insert_role(org, params) |> ensure_success()
+  def insert_role!(org, params), do: insert_role(org, params) |> Repo.ensure_success()
 
   def update_role(role, params), do: role_changeset(role, params) |> Repo.update()
 
-  def update_role!(role, params), do: update_role(role, params) |> ensure_success()
+  def update_role!(role, params), do: update_role(role, params) |> Repo.ensure_success()
 
   def delete_role!(role), do: Repo.delete!(role)
 
@@ -150,11 +152,11 @@ defmodule Grassflog.Orgs do
 
   def insert_domain(params), do: new_domain_changeset(params) |> Repo.insert()
 
-  def insert_domain!(params), do: insert_domain(params) |> ensure_success()
+  def insert_domain!(params), do: insert_domain(params) |> Repo.ensure_success()
 
   def update_domain(domain, params), do: domain_changeset(domain, params) |> Repo.update()
 
-  def update_domain!(domain, params), do: update_domain(domain, params) |> ensure_success()
+  def update_domain!(domain, params), do: update_domain(domain, params) |> Repo.ensure_success()
 
   def delete_domain!(domain), do: Repo.delete!(domain)
 
@@ -182,27 +184,16 @@ defmodule Grassflog.Orgs do
 
   def insert_acct(params), do: new_acct_changeset(params) |> Repo.insert()
 
-  def insert_acct!(params), do: insert_acct(params) |> ensure_success()
+  def insert_acct!(params), do: insert_acct(params) |> Repo.ensure_success()
 
   def update_acct(acct, params), do: acct_changeset(acct, params) |> Repo.update()
 
-  def update_acct!(acct, params), do: update_acct(acct, params) |> ensure_success()
+  def update_acct!(acct, params), do: update_acct(acct, params) |> Repo.ensure_success()
 
   def delete_acct!(acct), do: Repo.delete!(acct)
 
   def new_acct_changeset(changes \\ %{}), do: Acct.changeset(%Acct{}, changes)
 
   def acct_changeset(acct, changes \\ %{}), do: Acct.changeset(acct, changes)
-
-  #
-  # Internal helpers
-  #
-
-  defp ensure_success(result) do
-    case result do
-      {:ok, object} -> object
-      {:error, changeset} -> raise Ecto.InvalidChangesetError, changeset: changeset
-    end
-  end
 
 end
