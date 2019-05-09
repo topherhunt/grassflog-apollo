@@ -5,7 +5,8 @@ import {Query} from "react-apollo"
 import {gql} from "apollo-boost"
 
 import TensionEditor from "./tension_editor.jsx"
-import AddProposalPartSection from "./add_proposal_part_section.jsx"
+import ProposalPart from "./proposal_part.jsx"
+import AddProposalPart from "./add_proposal_part.jsx"
 
 const proposalQuery = gql`
   query Proposal($id: ID!) {
@@ -19,6 +20,7 @@ const proposalQuery = gql`
         children { id name }
       }
       proposer { id name email }
+      parts { id type targetId }
     }
   }
 `
@@ -37,7 +39,7 @@ const QueryWrapper = (props) => {
     {({loading, error, data}) => {
       if (loading) return <ShowLoading {...props} />
       else if (error) return <ShowError {...props} />
-      else return <ProposalBuilder proposal={data.proposal} />
+      else return <ShowProposalBuilder proposal={data.proposal} />
     }}
   </Query>
 }
@@ -46,17 +48,25 @@ const ShowLoading = () => <div>Loading...</div>
 
 const ShowError = () => <div>Error!</div>
 
-const ProposalBuilder = ({proposal}) => {
+const ShowProposalBuilder = ({proposal}) => {
+  console.log("The proposal received from apollo: ", proposal)
   // TODO: Compute the simulated state starting with the actual state and executing
   // each Part in sequence.
   // For now, I'll just use the actual state as the simulated state.
   return <div className="u-card">
     <h1>Proposal for circle: {proposal.circle.name}</h1>
     <div className="small text-muted">proposal id: {proposal.id}, proposer email: {proposal.proposer.email}, started at: {proposal.insertedAt}</div>
-    <hr />
     <TensionEditor proposal={proposal} />
-    <hr />
-    <AddProposalPartSection proposal={proposal} simulatedRoles={proposal.circle.children} />
+    {proposal.parts.map((part) =>
+      <ProposalPart
+        key={part.id}
+        part={part}
+        currentState={proposal.circle}
+        simulatedState={proposal.circle} />
+    )}
+    <AddProposalPart
+      proposal={proposal}
+      simulatedState={proposal.circle} />
   </div>
 }
 

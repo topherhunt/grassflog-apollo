@@ -24,5 +24,12 @@ defmodule GrassflogWeb.Graphql.Schema do
       arg :tension, non_null(:string)
       resolve &Resolvers.update_proposal/3
     end
+
+    field :create_proposal_part, type: :proposal_part do
+      arg :proposal_id, non_null(:id)
+      arg :type, non_null(:string)
+      arg :target_id, :integer
+      resolve &Resolvers.create_proposal_part/3
+    end
   end
 end

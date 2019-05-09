@@ -1,4 +1,5 @@
 import React from "react"
+import PropTypes from "prop-types"
 import {Mutation} from "react-apollo"
 import {gql} from "apollo-boost"
 import _ from "underscore"
@@ -21,9 +22,9 @@ class TensionEditor extends React.Component {
     super(props)
     this.state = {}
 
-    this.updateTension = _.debounce((runMutation, tension) => {
+    this.debounceTheUpdate = _.debounce((runMutation, tension) => {
       console.log("Running updateProposalMutation.")
-      runMutation({variables: {id: this.props.proposal.id, tension: tension}})
+      runMutation({variables: {id: props.proposal.id, tension: tension}})
       this.setState({updatePending: false})
     }, 200)
   }
@@ -32,7 +33,7 @@ class TensionEditor extends React.Component {
     return <Mutation mutation={updateProposalMutation}>
       {(runMutation, {called, loading, data}) => {
         // console.log("Mutation rendering with data: ", data)
-        return <div className="form-group u-relative">
+        return <div className="u-card u-box-shadow form-group u-relative">
           <label htmlFor="proposal_tension">The tension:</label>
           <textarea
             id="proposal_tension"
@@ -41,7 +42,7 @@ class TensionEditor extends React.Component {
             placeholder="What's the pain you're feeling? Why bother making this change?"
             onChange={(e) => {
               this.setState({updatePending: true})
-              this.updateTension(runMutation, e.target.value)
+              this.debounceTheUpdate(runMutation, e.target.value)
             }}
           ></textarea>
           <div style={{position: "absolute", right: "10px", top: "10px"}}>
@@ -53,6 +54,10 @@ class TensionEditor extends React.Component {
       }}
     </Mutation>
   }
+}
+
+TensionEditor.propTypes = {
+  proposal: PropTypes.object
 }
 
 export default TensionEditor

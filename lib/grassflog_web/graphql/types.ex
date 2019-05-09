@@ -22,5 +22,12 @@ defmodule GrassflogWeb.Graphql.Types do
     field :inserted_at, :string
     field :circle, :role, do: resolve &Resolvers.get_role/3
     field :proposer, :user, do: resolve &Resolvers.get_user/3
+    field :parts, list_of(:proposal_part), do: resolve &Resolvers.list_proposal_parts/3
+  end
+
+  object :proposal_part do
+    field :id, :id
+    field :type, :string
+    field :target_id, :integer
   end
 end

@@ -33,4 +33,15 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     proposal = Orgs.Proposal.update!(proposal, %{tension: params.tension})
     {:ok, proposal}
   end
+
+  def list_proposal_parts(%Orgs.Proposal{} = parent, _args, _resolution) do
+    {:ok, Orgs.ProposalPart.all(proposal: parent)}
+  end
+
+  def create_proposal_part(_parent, params, resolution) do
+    current_user = resolution.context.current_user
+    proposal = Orgs.Proposal.get!(params.proposal_id, proposer: current_user)
+    proposal_part = Orgs.ProposalPart.insert!(params)
+    {:ok, proposal_part}
+  end
 end
