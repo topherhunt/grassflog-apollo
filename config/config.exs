@@ -35,6 +35,9 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+# Scrub these params from the logs
+config :phoenix, :filter_parameters, ["password", "admin_password"]
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
