@@ -52,7 +52,7 @@ defmodule Grassflog.Orgs do
   def insert_org(params) do
     case Repo.insert(new_org_changeset(params)) do
       {:ok, org} ->
-        anchor = insert_circle!(org, %{circle_id: nil, name: "Anchor Circle"})
+        anchor = insert_circle!(org, %{is_anchor: true, name: "Anchor Circle"})
         org = update_org!(org, %{anchor_circle_id: anchor.id})
         {:ok, org}
 
@@ -127,8 +127,8 @@ defmodule Grassflog.Orgs do
 
   def insert_circle!(org, params) do
     circle = insert_role!(org, Map.merge(params, %{is_circle: true}))
-    insert_role!(org, %{circle_id: circle.id, name: "Facilitator"})
-    insert_role!(org, %{circle_id: circle.id, name: "Secretary"})
+    insert_role!(org, %{parent_id: circle.id, name: "Facilitator"})
+    insert_role!(org, %{parent_id: circle.id, name: "Secretary"})
     circle
   end
 

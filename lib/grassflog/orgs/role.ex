@@ -11,6 +11,7 @@ defmodule Grassflog.Orgs.Role do
     field :name, :string
     field :purpose, :string
     field :is_circle, :boolean
+    field :is_anchor, :boolean, virtual: true
     timestamps()
 
     has_many :children, Orgs.Role, foreign_key: :parent_id
@@ -22,9 +23,18 @@ defmodule Grassflog.Orgs.Role do
   # TODO: Split into user-facing vs. admin-facing changeset
   def changeset(role, attrs) do
     role
-    |> cast(attrs, [:parent_id, :name, :purpose, :is_circle])
+    |> cast(attrs, [:parent_id, :name, :purpose, :is_circle, :is_anchor])
     |> validate_required([:org_id, :name])
+    |> require_parent_id_unless_anchor()
     # TODO: Validate that there can only be one anchor circle per org?
+  end
+
+  defp require_parent_id_unless_anchor(changeset) do
+    if get_field(changeset, :parent_id) || get_field(changeset, :is_anchor) do
+      changeset
+    else
+      add_error(changeset, :parent_id, "is required (except for anchor circle)")
+    end
   end
 
   #

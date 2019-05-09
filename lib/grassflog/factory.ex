@@ -20,7 +20,7 @@ defmodule Grassflog.Factory do
     org = opts[:org] || raise("org is required")
     parent = opts[:parent] || raise("parent is required")
     name = opts[:name] || "Role #{random_uuid()}"
-    Orgs.insert_role!(org, %{circle_id: parent.id, name: name, purpose: opts[:purpose]})
+    Orgs.insert_role!(org, %{parent_id: parent.id, name: name, purpose: opts[:purpose]})
   end
 
   def insert_circle(opts) do
@@ -28,7 +28,7 @@ defmodule Grassflog.Factory do
     org = opts[:org] || raise("org is required")
     parent = opts[:parent] || raise("parent is required")
     name = opts[:name] || "Circle #{random_uuid()}"
-    Orgs.insert_circle!(org, %{circle_id: parent.id, name: name, purpose: opts[:purpose]})
+    Orgs.insert_circle!(org, %{parent_id: parent.id, name: name, purpose: opts[:purpose]})
   end
 
   def insert_domain(opts) do

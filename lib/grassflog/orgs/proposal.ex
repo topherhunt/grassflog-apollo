@@ -14,7 +14,7 @@ defmodule Grassflog.Orgs.Proposal do
     field :enacted_at, :naive_datetime
     timestamps()
 
-    has_many :proposal_changes, Orgs.ProposalChange
+    has_many :proposal_parts, Orgs.ProposalPart
   end
 
   # TODO: Find a way to separate the "defining" fields vs the "mutable" fields.
