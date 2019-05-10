@@ -1,38 +1,13 @@
 import React from "react"
 import {ApolloProvider} from "react-apollo"
-import client from "../apollo_client"
+import client from "../../apollo/client"
 import {Query} from "react-apollo"
-import {gql} from "apollo-boost"
 
 import TensionEditor from "./tension_editor.jsx"
-import ProposalPart from "./proposal_part.jsx"
+import ProposalPartContainer from "./proposal_part_container.jsx"
 import AddProposalPart from "./add_proposal_part.jsx"
 
-const proposalQuery = gql`
-  query Proposal($id: ID!) {
-    proposal(id: $id) {
-      id
-      tension
-      insertedAt
-      circle {
-        id
-        name
-        children { id name }
-      }
-      proposer { id name email }
-      parts {
-        id
-        type
-        targetId
-        changes {
-          id
-          type
-          instruction_data
-        }
-      }
-    }
-  }
-`
+import {proposalQuery} from "../../apollo/queries"
 
 // Wrap the component with an Apollo provider since this is the root
 const ProviderWrapper = (props) => (
@@ -67,7 +42,7 @@ const ShowProposalBuilder = ({proposal}) => {
     <div className="small text-muted">proposed by {proposal.proposer.name} ({proposal.proposer.email}), started at: {proposal.insertedAt}</div>
     <TensionEditor proposal={proposal} />
     {proposal.parts.map((part) =>
-      <ProposalPart
+      <ProposalPartContainer
         key={part.id}
         part={part}
         proposalId={proposal.id}

@@ -1,6 +1,6 @@
 import React from "react"
 import { ApolloProvider } from "react-apollo"
-import client from "./apollo_client.js"
+import client from "../apollo/client.js"
 import UsersList from "./users/users_list.jsx"
 
 const ApolloTest = () => (

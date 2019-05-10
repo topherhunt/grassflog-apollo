@@ -2,29 +2,8 @@ import React from "react"
 import PropTypes from "prop-types"
 import Select from "react-select"
 import {Mutation} from "react-apollo"
-import {gql} from "apollo-boost"
 
-const createPartMutation = gql`
-  mutation CreatePart($proposalId: ID!, $type: String!, $targetId: Int) {
-    create_proposal_part(proposalId: $proposalId, type: $type, targetId: $targetId) {
-      id
-      type
-      targetId
-    }
-  }
-`
-
-// This query is used to load and update the cache after createPartMutation succeeds.
-// It follows the same shape as ProposalBuilder.proposalQuery, but it's pruned since
-// we only care about updating the proposal.parts list and can ignore the rest.
-const cachedProposalPartsQuery = gql`
-  query Proposal($id: ID!) {
-    proposal(id: $id) {
-      id
-      parts { id type targetId }
-    }
-  }
-`
+import {createPartMutation, proposalQuery} from "../../apollo/queries"
 
 class AddProposalPart extends React.Component {
   render() {
@@ -78,18 +57,18 @@ class AddProposalPart extends React.Component {
     const proposalId = this.props.proposal.id
     const newPart = resp.data.create_proposal_part // The new record we need to cache
 
-    // Load the relevant data from the cache (we can ignore fields that won't change)
+    // Load the data from the cache
     let cachedData = cache.readQuery({
-      query: cachedProposalPartsQuery,
+      query: proposalQuery,
       variables: {id: proposalId}
     })
 
-    // Update the cached response so it's correct
+    // Update the cached response so it's correct (leave all other data untouched)
     cachedData.proposal.parts = cachedData.proposal.parts.concat(newPart)
 
-    // Write that transformed data to the cache (will leave alone any unreferenced fields)
+    // Write that transformed data to the cache
     cache.writeQuery({
-      query: cachedProposalPartsQuery,
+      query: proposalQuery,
       variables: {id: proposalId},
       data: cachedData
     })

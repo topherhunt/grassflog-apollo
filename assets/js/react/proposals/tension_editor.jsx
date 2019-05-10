@@ -3,19 +3,7 @@ import PropTypes from "prop-types"
 import {Mutation} from "react-apollo"
 import {gql} from "apollo-boost"
 import _ from "underscore"
-
-// As long as we request the mutation to return all fields that are being changed,
-// Apollo will smartly update the cache, re-rendering any usages of that data.
-// If we don't request both `id` and `tension` here, or in certain complex edge cases,
-// we may need to tell Apollo how to update the cache to keep it in-sync.
-const updateProposalMutation = gql`
-  mutation UpdateProposal($id: ID!, $tension: String!) {
-    update_proposal(id: $id, tension: $tension) {
-      id
-      tension
-    }
-  }
-`
+import {updateProposalMutation} from "../../apollo/queries"
 
 class TensionEditor extends React.Component {
   constructor(props) {
@@ -45,7 +33,7 @@ class TensionEditor extends React.Component {
               this.debounceTheUpdate(runMutation, e.target.value)
             }}
           ></textarea>
-          <div style={{position: "absolute", right: "10px", top: "10px"}}>
+          <div className="u-abs-top-right">
             {(this.state.updatePending
               ? <span className="text-warning">saving...</span>
               : <span className="text-success">√</span>)}

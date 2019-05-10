@@ -63,9 +63,9 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     {:ok, part}
   end
 
-  def delete_proposal_part(_parent, %{id: id}, resolution) do
+  def delete_proposal_part(_parent, params, resolution) do
     current_user = resolution.context.current_user
-    part = Orgs.ProposalPart.get!(id)
+    part = Orgs.ProposalPart.get!(params.id)
     # verify ownership
     Orgs.Proposal.get!(part.proposal_id, proposer: current_user)
     Orgs.ProposalPart.delete!(part)
@@ -98,7 +98,7 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     {:ok, change}
   end
 
-  def delete_proposal_change(_parent, %{id: id}, resolution) do
+  def delete_proposal_change(_parent, params, resolution) do
     current_user = resolution.context.current_user
     change = Orgs.ProposalChange.get!(params.id, preload: :part)
     # verify ownership

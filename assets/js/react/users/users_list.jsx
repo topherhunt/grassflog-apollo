@@ -2,12 +2,10 @@
 
 import React from "react"
 import { Query } from "react-apollo"
-import { gql } from "apollo-boost"
-
-const usersQuery = gql`{users {id email lastSignedInAt name}}`
+import {allUsersQuery} from "../../apollo/queries"
 
 const UsersList = () => (
-  <Query query={usersQuery}>
+  <Query query={allUsersQuery}>
     {({loading, error, data}) => {
       if (loading) {
         return <p>Loading...</p>
