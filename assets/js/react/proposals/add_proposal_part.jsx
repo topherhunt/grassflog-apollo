@@ -31,8 +31,8 @@ class AddProposalPart extends React.Component {
     return <Mutation
       mutation={createPartMutation}
       update={this.updateCache.bind(this)}>
-      {(runMutation, {called, loading, data}) => {
-        return <div className="u-card u-box-shadow">
+      {(runMutation, {called, loading, data}) => (
+        <div className="u-card u-box-shadow">
           <h3>Change something</h3>
           <p>Just as a reminder, the tension is: <em>{this.props.proposal.tension}</em></p>
           <div className="row">
@@ -64,44 +64,41 @@ class AddProposalPart extends React.Component {
             </div>
           </div>
         </div>
-      }}
+      )}
     </Mutation>
-  }
-
-  // Once the mutation adds a ProposalPart, we need to manually update the cache so it
-  // knows about the new record.
-  // See https://www.apollographql.com/docs/react/essentials/mutations#update
-  updateCache(cache, resp) {
-    // First we fetch the new ProposalPart data from the mutation response.
-    // Its shape & fields should match the parts list that we'll append it to.
-    const newPart = resp.data.create_proposal_part
-    // Next we load the current data from the cache, transform it, and write that data
-    // back to the cache so it's up-to-date.
-    // This query doesn't need to be complete; ie. if we ignore other Proposal fields,
-    // those fields won't be removed by our writeQuery call below.
-    let cachedData = cache.readQuery({
-      query: cachedProposalPartsQuery,
-      variables: {id: this.props.proposal.id}
-    })
-    // Transform the cachedData so it's up-to-date.
-    cachedData.proposal.parts = cachedData.proposal.parts.concat(newPart)
-    // Then load this updated cachedData back into the cache. (Any unreferenced fields
-    // will be preserved, so eg. it won't clobber proposal.tension or proposal.circle.)
-    cache.writeQuery({
-      query: cachedProposalPartsQuery,
-      variables: {id: this.props.proposal.id},
-      data: cachedData
-    })
   }
 
   roleOptions() {
     return this.props.simulatedState.children.map((r) => ({label: r.name, value: r.id}))
   }
+
+  // Tell Apollo how to update the cache to reflect this mutation
+  // See https://www.apollographql.com/docs/react/essentials/mutations#update
+  updateCache(cache, resp) {
+    const proposalId = this.props.proposal.id
+    const newPart = resp.data.create_proposal_part // The new record we need to cache
+
+    // Load the relevant data from the cache (we can ignore fields that won't change)
+    let cachedData = cache.readQuery({
+      query: cachedProposalPartsQuery,
+      variables: {id: proposalId}
+    })
+
+    // Update the cached response so it's correct
+    cachedData.proposal.parts = cachedData.proposal.parts.concat(newPart)
+
+    // Write that transformed data to the cache (will leave alone any unreferenced fields)
+    cache.writeQuery({
+      query: cachedProposalPartsQuery,
+      variables: {id: proposalId},
+      data: cachedData
+    })
+  }
 }
 
 AddProposalPart.propTypes = {
-  proposal: PropTypes.object,
-  simulatedState: PropTypes.object
+  proposal: PropTypes.object.isRequired,
+  simulatedState: PropTypes.object.isRequired
 }
 
 export default AddProposalPart

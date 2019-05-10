@@ -61,6 +61,7 @@ const ShowProposalBuilder = ({proposal}) => {
       <ProposalPart
         key={part.id}
         part={part}
+        proposalId={proposal.id}
         currentState={proposal.circle}
         simulatedState={proposal.circle} />
     )}

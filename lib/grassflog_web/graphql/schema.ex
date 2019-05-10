@@ -31,5 +31,10 @@ defmodule GrassflogWeb.Graphql.Schema do
       arg :target_id, :integer
       resolve &Resolvers.create_proposal_part/3
     end
+
+    field :delete_proposal_part, type: :proposal_part do
+      arg :id, non_null(:id)
+      resolve &Resolvers.delete_proposal_part/3
+    end
   end
 end

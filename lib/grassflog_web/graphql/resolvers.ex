@@ -29,6 +29,7 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   def update_proposal(_parent, params, resolution) do
     # Auth context: see https://hexdocs.pm/absinthe/mutations.html#authorization
     current_user = resolution.context.current_user
+    # verifies ownership
     proposal = Orgs.Proposal.get!(params.id, proposer: current_user)
     proposal = Orgs.Proposal.update!(proposal, %{tension: params.tension})
     {:ok, proposal}
@@ -40,8 +41,18 @@ defmodule GrassflogWeb.Graphql.Resolvers do
 
   def create_proposal_part(_parent, params, resolution) do
     current_user = resolution.context.current_user
-    proposal = Orgs.Proposal.get!(params.proposal_id, proposer: current_user)
+    # verifies ownership
+    Orgs.Proposal.get!(params.proposal_id, proposer: current_user)
     proposal_part = Orgs.ProposalPart.insert!(params)
     {:ok, proposal_part}
+  end
+
+  def delete_proposal_part(_parent, %{id: id}, resolution) do
+    current_user = resolution.context.current_user
+    part = Orgs.ProposalPart.get!(id)
+    # verifies ownership
+    Orgs.Proposal.get!(part.proposal_id, proposer: current_user)
+    Orgs.ProposalPart.delete!(part)
+    {:ok, part}
   end
 end

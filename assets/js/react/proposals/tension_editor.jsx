@@ -57,7 +57,7 @@ class TensionEditor extends React.Component {
 }
 
 TensionEditor.propTypes = {
-  proposal: PropTypes.object
+  proposal: PropTypes.object.isRequired
 }
 
 export default TensionEditor
