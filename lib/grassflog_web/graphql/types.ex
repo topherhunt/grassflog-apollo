@@ -29,5 +29,27 @@ defmodule GrassflogWeb.Graphql.Types do
     field :id, :id
     field :type, :string
     field :target_id, :integer
+    field :changes, list_of(:proposal_change) do
+      resolve &Resolvers.list_proposal_changes/3
+    end
+  end
+
+  object :proposal_change do
+    field :id, :id
+    field :type, :string
+    field :instruction_data, :json
+  end
+
+  # Define a custom scalar Type for stringified JSON.
+  # See https://hexdocs.pm/absinthe/custom-scalars.html#content
+  scalar :json do
+    serialize &Jason.encode!(&1)
+    parse fn(input) ->
+      # Don't crash if we receive invalid json
+      case Jason.decode(input) do
+        {:ok, result} -> result
+        _ -> :error
+      end
+    end
   end
 end

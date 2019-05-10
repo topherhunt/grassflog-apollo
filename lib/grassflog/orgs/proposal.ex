@@ -3,8 +3,7 @@ defmodule Grassflog.Orgs.Proposal do
   use Ecto.Schema
   import Ecto.Changeset
   require Ecto.Query
-  alias Ecto.Query
-  # import Ecto.Query, warn: false
+  alias Ecto.Query, as: Q
   alias Grassflog.{Repo, Orgs}
 
   schema "proposals" do
@@ -63,8 +62,8 @@ defmodule Grassflog.Orgs.Proposal do
     Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
   end
 
-  def filter(query, :id, id), do: Query.where(query, [r], r.id == ^id)
-  def filter(query, :org, org), do: Query.where(query, [r], r.org_id == ^org.id)
-  def filter(query, :circle, circle), do: Query.where(query, [r], r.circle_id == ^circle.id)
-  def filter(query, :proposer, proposer), do: Query.where(query, [r], r.proposer_id == ^proposer.id)
+  def filter(query, :id, id), do: Q.where(query, [r], r.id == ^id)
+  def filter(query, :org, org), do: Q.where(query, [r], r.org_id == ^org.id)
+  def filter(query, :circle, circle), do: Q.where(query, [r], r.circle_id == ^circle.id)
+  def filter(query, :proposer, user), do: Q.where(query, [r], r.proposer_id == ^user.id)
 end

@@ -36,5 +36,24 @@ defmodule GrassflogWeb.Graphql.Schema do
       arg :id, non_null(:id)
       resolve &Resolvers.delete_proposal_part/3
     end
+
+    field :create_proposal_change, type: :proposal_change do
+      arg :proposal_part_id, non_null(:id)
+      arg :type, non_null(:string)
+      arg :instruction_data, :json
+      resolve &Resolvers.create_proposal_change/3
+    end
+
+    field :update_proposal_change, type: :proposal_change do
+      arg :id, non_null(:id)
+      # Once you've created a change, you can't change the type of the change.
+      arg :instruction_data, :json
+      resolve &Resolvers.update_proposal_change/3
+    end
+
+    field :delete_proposal_change, type: :proposal_change do
+      arg :id, non_null(:id)
+      resolve &Resolvers.delete_proposal_change/3
+    end
   end
 end

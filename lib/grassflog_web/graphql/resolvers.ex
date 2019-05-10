@@ -1,6 +1,10 @@
 defmodule GrassflogWeb.Graphql.Resolvers do
   alias Grassflog.Orgs
 
+  #
+  # Users
+  #
+
   def get_user(%Orgs.Proposal{} = parent, _args, _resolution) do
     {:ok, Orgs.get_user(parent.proposer_id)}
   end
@@ -9,6 +13,10 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     {:ok, Orgs.get_users()}
   end
 
+  #
+  # Roles
+  #
+
   def get_role(%Orgs.Proposal{} = parent, _args, _resolution) do
     {:ok, Orgs.get_role(parent.circle_id)}
   end
@@ -16,6 +24,10 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   def list_roles(%Orgs.Role{} = parent, _args, _resolution) do
     {:ok, Orgs.get_roles(parent: parent)}
   end
+
+  #
+  # Proposals
+  #
 
   def get_proposal(_parent, %{id: id}, _resolution) do
     if proposal = Orgs.Proposal.get(id) do
@@ -29,11 +41,15 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   def update_proposal(_parent, params, resolution) do
     # Auth context: see https://hexdocs.pm/absinthe/mutations.html#authorization
     current_user = resolution.context.current_user
-    # verifies ownership
+    # verify ownership
     proposal = Orgs.Proposal.get!(params.id, proposer: current_user)
     proposal = Orgs.Proposal.update!(proposal, %{tension: params.tension})
     {:ok, proposal}
   end
+
+  #
+  # ProposalParts
+  #
 
   def list_proposal_parts(%Orgs.Proposal{} = parent, _args, _resolution) do
     {:ok, Orgs.ProposalPart.all(proposal: parent)}
@@ -41,18 +57,53 @@ defmodule GrassflogWeb.Graphql.Resolvers do
 
   def create_proposal_part(_parent, params, resolution) do
     current_user = resolution.context.current_user
-    # verifies ownership
+    # verify ownership
     Orgs.Proposal.get!(params.proposal_id, proposer: current_user)
-    proposal_part = Orgs.ProposalPart.insert!(params)
-    {:ok, proposal_part}
+    part = Orgs.ProposalPart.insert!(params)
+    {:ok, part}
   end
 
   def delete_proposal_part(_parent, %{id: id}, resolution) do
     current_user = resolution.context.current_user
     part = Orgs.ProposalPart.get!(id)
-    # verifies ownership
+    # verify ownership
     Orgs.Proposal.get!(part.proposal_id, proposer: current_user)
     Orgs.ProposalPart.delete!(part)
     {:ok, part}
+  end
+
+  #
+  # ProposalChanges
+  #
+
+  def list_proposal_changes(%Orgs.ProposalPart{} = parent, _args, _resolution) do
+    {:ok, Orgs.ProposalChange.all(part: parent)}
+  end
+
+  def create_proposal_change(_parent, params, resolution) do
+    current_user = resolution.context.current_user
+    part = Orgs.ProposalPart.get!(params.proposal_part_id)
+    # verify ownership
+    Orgs.Proposal.get!(part.proposal_id, proposer: current_user)
+    change = Orgs.ProposalChange.insert!(params)
+    {:ok, change}
+  end
+
+  def update_proposal_change(_parent, params, resolution) do
+    current_user = resolution.context.current_user
+    change = Orgs.ProposalChange.get!(params.id, preload: :part)
+    # verify ownership
+    Orgs.Proposal.get!(change.part.proposal_id, proposer: current_user)
+    change = Orgs.ProposalChange.update!(params)
+    {:ok, change}
+  end
+
+  def delete_proposal_change(_parent, %{id: id}, resolution) do
+    current_user = resolution.context.current_user
+    change = Orgs.ProposalChange.get!(params.id, preload: :part)
+    # verify ownership
+    Orgs.Proposal.get!(change.part.proposal_id, proposer: current_user)
+    Orgs.ProposalChange.delete!(change)
+    {:ok, change}
   end
 end

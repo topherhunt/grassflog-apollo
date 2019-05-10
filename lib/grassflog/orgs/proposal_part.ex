@@ -3,7 +3,7 @@ defmodule Grassflog.Orgs.ProposalPart do
   use Ecto.Schema
   import Ecto.Changeset
   require Ecto.Query
-  alias Ecto.Query
+  alias Ecto.Query, as: Q
   alias Grassflog.{Repo, Orgs}
 
   schema "proposal_parts" do
@@ -46,9 +46,9 @@ defmodule Grassflog.Orgs.ProposalPart do
   # NOTE: There's two very different kinds of validations:
   #   1) validating that this is a valid ProposalPart record
   #   2) validating that the instructions are valid to execute given the Proposal context.
-  def changeset(proposal_change, attrs) do
-    proposal_change
-    |> cast(attrs, [:proposal_id, :type, :target_id])
+  def changeset(struct, params) do
+    struct
+    |> cast(params, [:proposal_id, :type, :target_id])
     |> validate_required([:proposal_id, :type])
     |> validate_inclusion(:type, ~w(create_role update_role))
     # TODO: Validate the target_id and the associated change types based on part type
@@ -62,6 +62,6 @@ defmodule Grassflog.Orgs.ProposalPart do
     Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
   end
 
-  def filter(query, :id, id), do: Query.where(query, [r], r.id == ^id)
-  def filter(query, :proposal, prop), do: Query.where(query, [p], p.proposal_id == ^prop.id)
+  def filter(query, :id, id), do: Q.where(query, [r], r.id == ^id)
+  def filter(query, :proposal, prop), do: Q.where(query, [p], p.proposal_id == ^prop.id)
 end

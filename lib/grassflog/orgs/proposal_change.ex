@@ -2,8 +2,9 @@
 defmodule Grassflog.Orgs.ProposalChange do
   use Ecto.Schema
   import Ecto.Changeset
-  import Ecto.Query, warn: false
-  alias Grassflog.Orgs
+  require Ecto.Query
+  alias Ecto.Query, as: Q
+  alias Grassflog.{Repo, Orgs}
 
   schema "proposal_changes" do
     belongs_to :proposal_part, Orgs.ProposalPart
@@ -16,15 +17,58 @@ defmodule Grassflog.Orgs.ProposalChange do
 
   @valid_types [~w(create_role update_role move_role expand_role collapse_role delete_role create_domain update_domain delete_domain create_acct update_acct delete_acct)]
 
-  def changeset(proposal_change, attrs) do
-    proposal_change
-    |> cast(attrs, [:proposal_part_id, :type, :instruction_data, :description_data, :enacted_at])
+  #
+  # Public
+  #
+
+  def get(id, filt \\ []), do: get_by(Keyword.merge([id: id], filt))
+
+  def get!(id, filt \\ []), do: get_by!(Keyword.merge([id: id], filt))
+
+  def get_by(filt), do: __MODULE__ |> filter(filt) |> Repo.first()
+
+  def get_by!(filt), do: __MODULE__ |> filter(filt) |> Repo.first!()
+
+  def all(filt \\ []), do: __MODULE__ |> filter(filt) |> Repo.all()
+
+  def count(filt \\ []), do: __MODULE__ |> filter(filt) |> Repo.count()
+
+  def insert(params), do: new_changeset(params) |> Repo.insert()
+
+  def insert!(params), do: insert(params) |> Repo.ensure_success()
+
+  def update(struct, params), do: changeset(struct, params) |> Repo.update()
+
+  def update!(struct, params), do: update(struct, params) |> Repo.ensure_success()
+
+  def delete!(struct), do: Repo.delete!(struct)
+
+  def new_changeset(params \\ %{}), do: changeset(%__MODULE__{}, params)
+
+  def changeset(struct, params) do
+    struct
+    |> cast(params, [:proposal_part_id, :type, :instruction_data, :description_data, :enacted_at])
     |> validate_required([:proposal_part_id, :type, :instruction_data])
     |> validate_inclusion(:type, @valid_types)
     # TODO: Validate the *_data blobs given this type:
     # - The shape of the data blobs matches pattern for this type
     # - (if not enacted) all key references are valid & allowed
   end
+
+  #
+  # Filters
+  #
+
+  def filter(starting_query, filters) do
+    Enum.reduce(filters, starting_query, fn {k, v}, query -> filter(query, k, v) end)
+  end
+
+  def filter(query, :id, id), do: Q.where(query, [r], r.id == ^id)
+  def filter(query, :part, part), do: Q.where(query, [p], p.proposal_part_id == ^part.id)
+
+  #
+  # Validation internals
+  #
 
   # TODO: Figure out a concise, readable way to encode *_data shape validations.
   # I think I like the "somewhat nested kw list" pattern below.

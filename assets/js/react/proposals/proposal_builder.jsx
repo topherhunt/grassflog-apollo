@@ -20,7 +20,16 @@ const proposalQuery = gql`
         children { id name }
       }
       proposer { id name email }
-      parts { id type targetId }
+      parts {
+        id
+        type
+        targetId
+        changes {
+          id
+          type
+          instruction_data
+        }
+      }
     }
   }
 `
@@ -55,7 +64,7 @@ const ShowProposalBuilder = ({proposal}) => {
   // For now, I'll just use the actual state as the simulated state.
   return <div className="u-card">
     <h1>Proposal for circle: {proposal.circle.name}</h1>
-    <div className="small text-muted">proposal id: {proposal.id}, proposer email: {proposal.proposer.email}, started at: {proposal.insertedAt}</div>
+    <div className="small text-muted">proposed by {proposal.proposer.name} ({proposal.proposer.email}), started at: {proposal.insertedAt}</div>
     <TensionEditor proposal={proposal} />
     {proposal.parts.map((part) =>
       <ProposalPart
