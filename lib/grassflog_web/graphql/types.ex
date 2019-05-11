@@ -12,8 +12,24 @@ defmodule GrassflogWeb.Graphql.Types do
 
   object :role do
     field :id, :id
+    field :parent_id, :string
     field :name, :string
+    field :purpose, :string
     field :children, list_of(:role), do: resolve &Resolvers.list_roles/3
+    field :domains, list_of(:domain), do: resolve &Resolvers.list_domains/3
+    field :accts, list_of(:acct), do: resolve &Resolvers.list_accts/3
+  end
+
+  object :domain do
+    field :id, :id
+    field :role_id, :string
+    field :name, :string
+  end
+
+  object :acct do
+    field :id, :id
+    field :role_id, :string
+    field :name, :string
   end
 
   object :proposal do

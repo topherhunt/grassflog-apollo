@@ -15,7 +15,14 @@ const proposalQuery = gql`
       circle {
         id
         name
-        children { id name }
+        children {
+          id
+          name
+          parent_id
+          purpose
+          domains { id role_id name }
+          accts { id role_id name }
+        }
       }
       proposer { id name email }
       parts {

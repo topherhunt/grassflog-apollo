@@ -26,6 +26,22 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   end
 
   #
+  # Domains
+  #
+
+  def list_domains(%Orgs.Role{} = parent, _args, _resolution) do
+    {:ok, Orgs.get_domains(role: parent)}
+  end
+
+  #
+  # Accountabilities
+  #
+
+  def list_accts(%Orgs.Role{} = parent, _args, _resolution) do
+    {:ok, Orgs.get_accts(role: parent)}
+  end
+
+  #
   # Proposals
   #
 
