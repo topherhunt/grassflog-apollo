@@ -9,3 +9,8 @@
   * `mix phx.server`
   * Go to http://localhost:4000 and confirm the local site works
   * `mix test` to run all tests
+
+
+## Proposal builder: Client-side structure
+
+TODO: Fill this in

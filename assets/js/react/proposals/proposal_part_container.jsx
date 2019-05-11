@@ -1,7 +1,8 @@
 import React from "react"
 import PropTypes from "prop-types"
 import {Mutation} from "react-apollo"
-import ProposalPartContent from "./proposal_part_content.jsx"
+import CreateRolePart from "./parts/create_role_part.jsx"
+import UpdateRolePart from "./parts/update_role_part.jsx"
 import {deletePartMutation, proposalQuery} from "../../apollo/queries"
 
 class ProposalPartContainer extends React.Component {
@@ -12,8 +13,7 @@ class ProposalPartContainer extends React.Component {
     >
       {(runMutation, {called, loading, data}) => (
         <div className="u-card u-relative">
-          <ProposalPartContent {...this.props} />
-
+          {this.renderPartContent(this.props.part.type)}
           <div className="u-abs-top-right">
             <a href="#" className="text-danger"
               onClick={(e) => {
@@ -25,6 +25,16 @@ class ProposalPartContainer extends React.Component {
         </div>
       )}
     </Mutation>
+  }
+
+  renderPartContent(type) {
+    if (type == "create_role") {
+      return <CreateRolePart {...this.props} />
+    } else if (type == "update_role") {
+      return <UpdateRolePart {...this.props} />
+    } else {
+      raise("Unknown ProposalPart type: "+type)
+    }
   }
 
   // Tell Apollo how to update the cache to reflect this mutation
@@ -53,9 +63,8 @@ class ProposalPartContainer extends React.Component {
 }
 
 ProposalPartContainer.propTypes = {
-  proposalId: PropTypes.string.isRequired,
-  part: PropTypes.object.isRequired,
-  currentState: PropTypes.object.isRequired
+  proposal: PropTypes.object.isRequired,
+  part: PropTypes.object.isRequired
 }
 
 const raise = (message) => console.error(message)

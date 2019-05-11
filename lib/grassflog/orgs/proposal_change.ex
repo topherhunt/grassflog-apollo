@@ -48,6 +48,7 @@ defmodule Grassflog.Orgs.ProposalChange do
   def changeset(struct, params) do
     struct
     |> cast(params, [:proposal_part_id, :type, :instruction_data, :description_data, :enacted_at])
+    # instruction_data is required, but may be an empty map (for certain types).
     |> validate_required([:proposal_part_id, :type, :instruction_data])
     |> validate_inclusion(:type, @valid_types)
     # TODO: Validate the *_data blobs given this type:

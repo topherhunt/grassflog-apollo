@@ -2,7 +2,6 @@ import React from "react"
 import PropTypes from "prop-types"
 import Select from "react-select"
 import {Mutation} from "react-apollo"
-
 import {createPartMutation, proposalQuery} from "../../apollo/queries"
 
 class AddProposalPart extends React.Component {

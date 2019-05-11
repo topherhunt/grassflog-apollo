@@ -25,7 +25,7 @@ const proposalQuery = gql`
         changes {
           id
           type
-          instruction_data
+          instructionData
         }
       }
     }
@@ -50,7 +50,22 @@ const createPartMutation = gql`
       changes {
         id
         type
-        instruction_data
+        instructionData
+      }
+    }
+  }
+`
+
+const updatePartMutation = gql`
+  mutation UpdateProposalPart($id: ID!, $changes_json: String!) {
+    update_proposal_part(id: $id, changes_json: $changes_json) {
+      id
+      type
+      targetId
+      changes {
+        id
+        type
+        instructionData
       }
     }
   }
@@ -69,5 +84,6 @@ export {
   proposalQuery,
   updateProposalMutation,
   createPartMutation,
+  updatePartMutation,
   deletePartMutation
 }

@@ -1,7 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
 import {Mutation} from "react-apollo"
-import {gql} from "apollo-boost"
 import _ from "underscore"
 import {updateProposalMutation} from "../../apollo/queries"
 
