@@ -27,7 +27,10 @@
 
 .u-form-error { color: #a00; background-color: #fee; padding: 5px; }
 
+.u-input-delete { background-color: #fee; }
+
 .u-relative { position: relative; }
+
 .u-abs-top-right { position: absolute; top: 2px; right: 10px; }
 
 /*

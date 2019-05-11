@@ -12,7 +12,7 @@ class ProposalPartContainer extends React.Component {
       update={this.updateCache.bind(this)}
     >
       {(runMutation, {called, loading, data}) => (
-        <div className="u-card u-relative">
+        <div className="u-card u-box-shadow u-relative">
           {this.renderPartContent(this.props.part.type)}
           <div className="u-abs-top-right">
             <a href="#" className="text-danger"

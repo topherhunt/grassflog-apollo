@@ -35,6 +35,7 @@ class ProposalBuilder extends React.Component {
       <h1>Proposal for circle: {proposal.circle.name}</h1>
       <div className="small text-muted">Proposed by {proposal.proposer.name} ({proposal.proposer.email}), started at: {proposal.insertedAt}</div>
       <TensionEditor proposal={proposal} />
+      <hr />
       {proposal.parts.map((part) =>
         <ProposalPartContainer
           key={part.id}
