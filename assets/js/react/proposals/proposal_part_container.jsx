@@ -28,10 +28,12 @@ class ProposalPartContainer extends React.Component {
   }
 
   renderPartContent(type) {
+    const passedProps = {...this.props}
+
     if (type == "create_role") {
-      return <CreateRolePart {...this.props} />
+      return <div>CreateRolePart stub div (TODO)</div>
     } else if (type == "update_role") {
-      return <UpdateRolePart {...this.props} />
+      return <UpdateRolePart {...passedProps} />
     } else {
       raise("Unknown ProposalPart type: "+type)
     }

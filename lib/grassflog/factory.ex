@@ -48,26 +48,42 @@ defmodule Grassflog.Factory do
   def seed_hierarchy(org) do
     anchor = Orgs.get_role!(org.anchor_circle_id)
     circle1 = insert_circle(org: org, parent: anchor)
+    circle2 = insert_circle(org: org, parent: anchor)
+    circle3 = insert_circle(org: org, parent: circle1)
 
-    role1 = insert_role(org: org, parent: anchor)
-    role2 = insert_role(org: org, parent: circle1)
-    role3 = insert_role(org: org, parent: circle1)
-    role4 = insert_role(org: org, parent: circle1)
+    Enum.each([anchor, circle1, circle2, circle3], fn(circle) ->
+      seed_accts_and_domains(circle)
 
-    insert_domain(role: circle1)
-    insert_domain(role: role1)
-    insert_domain(role: role2)
+      Enum.each(1..Enum.random(2..6), fn(_) ->
+        role = insert_role(org: org, parent: circle)
+        seed_accts_and_domains(role)
+      end)
+    end)
 
-    insert_acct(role: circle1)
-    insert_acct(role: circle1)
-    insert_acct(role: role1)
-    insert_acct(role: role2)
-    insert_acct(role: role3)
-    insert_acct(role: role3)
-    insert_acct(role: role3)
-    insert_acct(role: role4)
+    # role1 = insert_role(org: org, parent: anchor)
+    # role2 = insert_role(org: org, parent: circle1)
+    # role3 = insert_role(org: org, parent: circle1)
+    # role4 = insert_role(org: org, parent: circle1)
+
+    # insert_domain(role: circle1)
+    # insert_domain(role: role1)
+    # insert_domain(role: role2)
+
+    # insert_acct(role: circle1)
+    # insert_acct(role: circle1)
+    # insert_acct(role: role1)
+    # insert_acct(role: role2)
+    # insert_acct(role: role3)
+    # insert_acct(role: role3)
+    # insert_acct(role: role3)
+    # insert_acct(role: role4)
 
     nil
+  end
+
+  def seed_accts_and_domains(role) do
+    Enum.each(1..Enum.random(1..3), fn(_) -> insert_domain(role: role) end)
+    Enum.each(1..Enum.random(2..6), fn(_) -> insert_acct(role: role) end)
   end
 
   def random_uuid do

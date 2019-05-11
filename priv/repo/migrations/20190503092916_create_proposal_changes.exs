@@ -5,8 +5,9 @@ defmodule Grassflog.Repo.Migrations.CreateProposalChanges do
     create table(:proposal_changes) do
       add :proposal_part_id, references(:proposal_parts, on_delete: :delete_all), null: false
       add :type, :string, null: false
-      add :instruction_data, :jsonb
-      add :description_data, :jsonb
+      add :target_id, :integer
+      add :params, :jsonb
+      add :metadata, :jsonb
       timestamps()
       # doesn't hurt to explicitly track this at the per-change level
       add :enacted_at, :naive_datetime

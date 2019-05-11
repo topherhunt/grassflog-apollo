@@ -37,7 +37,8 @@ defmodule GrassflogWeb.Graphql.Types do
   object :proposal_change do
     field :id, :id
     field :type, :string
-    field :instruction_data, :json
+    field :target_id, :integer
+    field :params, :json
   end
 
   # Define a custom scalar Type for stringified JSON.

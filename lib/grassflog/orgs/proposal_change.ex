@@ -9,8 +9,13 @@ defmodule Grassflog.Orgs.ProposalChange do
   schema "proposal_changes" do
     belongs_to :proposal_part, Orgs.ProposalPart
     field :type, :string
-    field :instruction_data, :map
-    field :description_data, :map
+    field :target_id, :integer
+    # Any params required to execute this change
+    # (referencing only target_id, but not the Part target or Proposal circle)
+    field :params, :map
+    # Any fields required to 1) locate this change, given a record it impacted, and
+    # 2) describe it in human-readable terms (referencing only the target_id and params)
+    field :metadata, :map
     field :enacted_at, :naive_datetime
     timestamps()
   end
@@ -42,6 +47,9 @@ defmodule Grassflog.Orgs.ProposalChange do
   def update!(struct, params), do: update(struct, params) |> Repo.ensure_success()
 
   def delete!(struct), do: Repo.delete!(struct)
+
+  # TODO: Require certain filters so I can't nuke the whole db
+  def delete_all!(struct, filt), do: __MODULE__ |> filter(filt) |> Repo.delete_all!()
 
   def new_changeset(params \\ %{}), do: changeset(%__MODULE__{}, params)
 
