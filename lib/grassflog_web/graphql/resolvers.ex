@@ -89,11 +89,11 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     # TODO: Pull this out into a helper on the Orgs context?
     Orgs.ProposalChange.delete_all!(part: part)
     # We expect params.changes_json to be a JSON-serialized list of change params for all
-    # this Part's changes. Each params is a map shaped like %{"type", "instruction_data"}.
-    # TODO: instruction_data will likely be a JSON string. Does this also need parsing?
+    # this Part's changes. Each params is a map shaped like %{"type", "params"}.
+    # TODO: params will likely be a JSON string. Does this also need parsing?
     list_of_params_for_changes = Jason.decode!(params.changes_json)
     Enum.each(list_of_params_for_changes, fn(change_params) ->
-      change_params = Map.merge(change_params, %{"part_id" => part.id})
+      change_params = Map.merge(change_params, %{"proposal_part_id" => part.id})
       Orgs.ProposalChange.insert!(change_params)
     end)
 

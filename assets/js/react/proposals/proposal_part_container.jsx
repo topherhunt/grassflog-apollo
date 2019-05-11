@@ -42,7 +42,7 @@ class ProposalPartContainer extends React.Component {
   // Tell Apollo how to update the cache to reflect this mutation
   // See https://www.apollographql.com/docs/react/essentials/mutations#update
   updateCache(cache, resp) {
-    const proposalId = this.props.proposalId
+    const proposalId = this.props.proposal.id
     const deletedPartId = this.props.part.id // The record we need removed from the cache
 
     // Load the relevant data from the cache (we can ignore fields that won't change)

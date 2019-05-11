@@ -94,7 +94,7 @@ const FormObjectManager = {
   // Execute a single change and return the transformed Form object.
   // This is basically a reducer.
   simulateChange: function(form, change) {
-    type = change.type
+    const type = change.type
     if (type == "update_role") {
       if (change.params.name) { form.attrs.name = change.params.name }
       if (change.params.purpose) { form.attrs.purpose = change.params.purpose }
@@ -110,10 +110,13 @@ const FormObjectManager = {
     }
     else if (type == "move_role") {
       if (!form.moveRoles) { form.moveRoles = [] }
-      form.moveRoles.concat({id: change.targetId, parentId: change.params.parent_id})
+      form.moveRoles = form.moveRoles.concat({
+        id: change.targetId,
+        parentId: change.params.parent_id
+      })
     }
     else if (type == "create_domain") {
-      form.domains.concat({
+      form.domains = form.domains.concat({
         roleId: change.params.role_id,
         name: change.params.name,
         create: true
@@ -129,7 +132,7 @@ const FormObjectManager = {
       domain.delete = true
     }
     else if (type == "create_acct") {
-      form.accts.concat({
+      form.accts = form.accts.concat({
         roleId: change.params.role_id,
         name: change.params.name,
         create: true
@@ -151,71 +154,87 @@ const FormObjectManager = {
     return form
   },
 
-  // Given two form states (orig and next), compute what changes are required to transform
-  // orig into next. Return the list of changes.
-  computeChanges: function(origForm, nextForm) {
+  // Given two form states (the original and the updated), compute what changes are needed
+  // to transform form1 into form2. Return the list of changes.
+  computeChanges: function(form1, form2) {
     let changes = []
-    let roleId = nextForm.targetId
+    let roleId = form2.targetId
 
     // Is the role updated?
-    if (origForm.name != nextForm.name || origForm.purpose != nextForm.purpose) {
+    const attrs1 = form1.attrs
+    const attrs2 = form2.attrs
+    if (attrs1.name != attrs2.name || attrs1.purpose != attrs2.purpose) {
       let params = {}
-      if (origForm.name != nextForm.name) { params.name = nextForm.name }
-      if (origForm.purpose != nextForm.purpose) { params.purpose = nextForm.purpose }
-      changes.concat({type: "update_role", targetId: roleId, params: params})
+      if (attrs1.name != attrs2.name) { params.name = attrs2.name }
+      if (attrs1.purpose != attrs2.purpose) { params.purpose = attrs2.purpose }
+      changes = changes.concat({type: "update_role", targetId: roleId, params: params})
     }
 
     // Is the role being expanded?
-    if (nextForm.expandRole) {
-      changes.concat({type: "expand_role", targetId: roleId})
+    if (form2.expandRole) {
+      changes = changes.concat({type: "expand_role", targetId: roleId})
     }
 
     // Are roles being moved in or out?
-    nextForm.moveRoles.map(function(move) {
-      changes.concat({targetId: move.targetId, parentId: move.parentId})
+    form2.moveRoles.map(function(move) {
+      changes = changes.concat({targetId: move.targetId, parentId: move.parentId})
     })
 
     // Is the role being collapsed?
-    if (nextForm.collapseRole) {
-      changes.concat({type: "collapse_role", targetId: roleId})
+    if (form2.collapseRole) {
+      changes = changes.concat({type: "collapse_role", targetId: roleId})
     }
 
     // Is the role being deleted?
-    if (nextForm.deleteRole) {
-      changes.concat({type: "delete_role", targetId: roleId})
+    if (form2.deleteRole) {
+      changes = changes.concat({type: "delete_role", targetId: roleId})
     }
 
     // Are new domains added?
-    nextForm.domains.filter((i) => !!i.create).map(function(domain) {
-      changes.concat({type: "create_domain", params: {roleId: roleId, name: domain.name}})
+    form2.domains.filter((i) => !!i.create).map(function(domain) {
+      changes = changes.concat({
+        type: "create_domain",
+        params: {roleId: roleId, name: domain.name}
+      })
     })
 
     // Are existing domains updated?
-    nextForm.domains.filter((i) => !!i.update).map(function(domain) {
-      changes.concat({type: "update_domain", targetId: domain.id, name: domain.name})
+    form2.domains.filter((i) => !!i.update).map(function(domain) {
+      changes = changes.concat({
+        type: "update_domain",
+        targetId: domain.id,
+        name: domain.name
+      })
     })
 
     // Are domains removed?
-    nextForm.domains.filter((i) => !!i.delete).map(function(domain) {
-      changes.concat({type: "delete_domain", targetId: domain.id})
+    form2.domains.filter((i) => !!i.delete).map(function(domain) {
+      changes = changes.concat({type: "delete_domain", targetId: domain.id})
     })
 
     // Are new accts added?
-    nextForm.accts.filter((i) => !!i.create).map(function(acct) {
-      changes.concat({type: "create_acct", params: {roleId: roleId, name: acct.name}})
+    form2.accts.filter((i) => !!i.create).map(function(acct) {
+      changes = changes.concat({
+        type: "create_acct",
+        params: {roleId: roleId, name: acct.name}
+      })
     })
 
     // Are existing accts updated?
-    nextForm.accts.filter((i) => !!i.update).map(function(acct) {
-      changes.concat({type: "update_acct", targetId: acct.id, name: acct.name})
+    form2.accts.filter((i) => !!i.update).map(function(acct) {
+      changes = changes.concat({
+        type: "update_acct",
+        targetId: acct.id,
+        name: acct.name
+      })
     })
 
     // Are accts removed?
-    nextForm.accts.filter((i) => !!i.delete).map(function(acct) {
-      changes.concat({type: "delete_acct", targetId: acct.id})
+    form2.accts.filter((i) => !!i.delete).map(function(acct) {
+      changes = changes.concat({type: "delete_acct", targetId: acct.id})
     })
 
-    console.log("TODO: Run changes on origForm to confirm that we end up identical to nextForm.")
+    console.log("TODO: Run changes on form1 & confirm that we end up same as form2.")
 
     return changes
   }

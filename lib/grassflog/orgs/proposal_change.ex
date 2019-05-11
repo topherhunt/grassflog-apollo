@@ -20,7 +20,7 @@ defmodule Grassflog.Orgs.ProposalChange do
     timestamps()
   end
 
-  @valid_types [~w(create_role update_role move_role expand_role collapse_role delete_role create_domain update_domain delete_domain create_acct update_acct delete_acct)]
+  @valid_types ~w(create_role update_role move_role expand_role collapse_role delete_role create_domain update_domain delete_domain create_acct update_acct delete_acct)
 
   #
   # Public
@@ -49,15 +49,15 @@ defmodule Grassflog.Orgs.ProposalChange do
   def delete!(struct), do: Repo.delete!(struct)
 
   # TODO: Require certain filters so I can't nuke the whole db
-  def delete_all!(struct, filt), do: __MODULE__ |> filter(filt) |> Repo.delete_all!()
+  def delete_all!(filt), do: __MODULE__ |> filter(filt) |> Repo.delete_all()
 
   def new_changeset(params \\ %{}), do: changeset(%__MODULE__{}, params)
 
   def changeset(struct, params) do
     struct
-    |> cast(params, [:proposal_part_id, :type, :instruction_data, :description_data, :enacted_at])
+    |> cast(params, [:proposal_part_id, :type, :params, :metadata, :enacted_at])
     # instruction_data is required, but may be an empty map (for certain types).
-    |> validate_required([:proposal_part_id, :type, :instruction_data])
+    |> validate_required([:proposal_part_id, :type, :params])
     |> validate_inclusion(:type, @valid_types)
     # TODO: Validate the *_data blobs given this type:
     # - The shape of the data blobs matches pattern for this type

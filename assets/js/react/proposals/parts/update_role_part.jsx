@@ -1,6 +1,7 @@
 import React from "react"
 import PropTypes from "prop-types"
 import {Mutation} from "react-apollo"
+import _ from "underscore"
 import {updatePartMutation} from "../../../apollo/queries"
 import FormObjectManager from "./form_object_manager"
 
@@ -26,6 +27,18 @@ class UpdateRolePart extends React.Component {
     const origForm = FormObjectManager.newFormObjectForUpdateRolePart(this.role)
     const updatedForm = FormObjectManager.simulateChanges(origForm, props.part.changes)
     this.state = {origForm, updatedForm}
+
+    this.runDebouncedMutation = _.debounce((runMutation) => {
+      const changelist = FormObjectManager.computeChanges(
+        this.state.origForm,
+        this.state.updatedForm)
+      console.log("Generated changelist: ", changelist)
+      console.log("Running updatePartMutation.")
+      const changes_json = JSON.stringify(changelist)
+      console.log("changes_json is: ", changes_json)
+      runMutation({variables: {id: this.props.part.id, changes_json: changes_json}})
+      // this.setState({updatePending: false})
+    }, 500).bind(this)
   }
 
   render() {
@@ -41,45 +54,9 @@ class UpdateRolePart extends React.Component {
 
           {this.renderPurposeField({runMutation})}
 
-          <div className="form-group">
-            <h4>Domains</h4>
-            {this.state.updatedForm.domains.map((domain) =>
-              <div key={domain.uuid} className="form-group u-relative">
-                <input type="text"
-                  className={"form-control " + (domain.delete ? "u-input-delete" : "")}
-                  value={domain.name}
-                  ref={(input) => {
-                    if (input && this.state.focusOnInput == domain.uuid) {
-                      input.focus()
-                      this.setState({focusOnInput: null})
-                    }
-                  }}
-                  onChange={(e) => {
-                    this.updateDomain(domain.uuid, e.target.value)
-                    {/*this.runDebouncedMutation(runMutation)*/}
-                  }} />
-                <div className="u-abs-top-right">
-                  <a href="#" className={domain.delete ? "" : "text-danger"}
-                    onClick={(e) => {
-                      console.log("Clicked!")
-                      e.preventDefault()
-                      this.deleteDomain(domain.uuid)
-                    }}>
-                    <i className="icon">{domain.delete ? "delete_forever" : "delete"}</i>
-                  </a>
-                </div>
-              </div>
-            )}
-            {/* For each domain in this.latestForm, render a div for it */}
+          {this.renderDomainsSection({runMutation})}
 
-            <input type="text"
-              className="form-control"
-              placeholder="Add a domain..."
-              defaultValue=""
-              onClick={(e) => {
-                this.createDomain()
-              }} />
-          </div>
+
 
         </div>
       )}
@@ -96,10 +73,7 @@ class UpdateRolePart extends React.Component {
         value={this.state.updatedForm.attrs.name}
         onChange={(e) => {
           this.updateRoleName(e.target.value)
-          // TODO: Where is the best place to trigger the mutation?
-          // I don't need to pass all params, the function has the this-context so it
-          // can derive the changelist and the relevant ids as needed.
-          // this.runDebouncedMutation(runMutation)
+          this.runDebouncedMutation(runMutation)
         }} />
     </div>
   }
@@ -122,6 +96,52 @@ class UpdateRolePart extends React.Component {
       <p>The latest purpose is: {this.state.updatedForm.attrs.purpose}</p>
     </div>
   }
+
+  renderDomainsSection({runMutation}) {
+    <div className="form-group">
+      <h4>Domains</h4>
+      {this.state.updatedForm.domains.map((domain) =>
+        <div key={domain.uuid} className="form-group u-relative">
+          <input type="text"
+            className={"form-control " + (domain.delete ? "u-input-delete" : "")}
+            value={domain.name}
+            ref={(input) => {
+              if (input && this.state.focusOnInput == domain.uuid) {
+                input.focus()
+                this.setState({focusOnInput: null})
+              }
+            }}
+            onChange={(e) => {
+              this.updateDomain(domain.uuid, e.target.value)
+              {/*this.runDebouncedMutation(runMutation)*/}
+            }} />
+          <div className="u-abs-top-right">
+            <a href="#" className={domain.delete ? "" : "text-danger"}
+              onClick={(e) => {
+                console.log("Clicked!")
+                e.preventDefault()
+                this.deleteDomain(domain.uuid)
+              }}>
+              <i className="icon">{domain.delete ? "delete_forever" : "delete"}</i>
+            </a>
+          </div>
+        </div>
+      )}
+      {/* For each domain in this.latestForm, render a div for it */}
+
+      <input type="text"
+        className="form-control"
+        placeholder="Add a domain..."
+        defaultValue=""
+        onClick={(e) => {
+          this.createDomain()
+        }} />
+    </div>
+  }
+
+  //
+  // Update handlers
+  //
 
   updateRoleName(newName) {
     this.setState((state, props) => {
