@@ -27,7 +27,10 @@
 
 .u-form-error { color: #a00; background-color: #fee; padding: 5px; }
 
-.u-input-delete { background-color: #fee; }
+/* Ordering matters here. */
+.u-to-update { background-color: #fff3cd; }
+.u-to-delete { background-color: #fee; }
+.u-to-create { background-color: #d4edda; }
 
 .u-relative { position: relative; }
 

@@ -53,10 +53,8 @@ class FormObject {
   // sampleUpdatedFormObject: {
   //   type: "update_role",
   //   targetId: 27,
-  //   attrs: {
-  //     name: "blah",
-  //     purpose: "blah"
-  //   },
+  //   roleName: "blah",
+  //   rolePurpose: "blah",
   //   expandRole: true,
   //   collapseRole: false,
   //   deleteRole: false,

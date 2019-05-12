@@ -57,6 +57,7 @@ class UpdateRolePart extends React.Component {
           {this.renderNameField({runMutation})}
           {this.renderPurposeField({runMutation})}
           {this.renderDomainsSection({runMutation})}
+          {this.renderAcctsSection({runMutation})}
         </div>
       )}
     </Mutation>
@@ -64,12 +65,15 @@ class UpdateRolePart extends React.Component {
 
   renderNameField({runMutation}) {
     let role = this.role
+    let name = this.getFormField("roleName")
+    let origName = this.state.origForm.get("roleName")
+    let toUpdate = (name != origName)
     return <div className="form-group">
       <label htmlFor={"role_"+role.id+"_name"}>Name</label>
       <input type="text"
         id={"role_"+role.id+"_name"}
-        className="form-control"
-        value={this.getFormField("roleName")}
+        className={"form-control" + (toUpdate ? " u-to-update" : "")}
+        value={name}
         onChange={(e) => {
           let name = e.target.value
           this.updateForm((f) => f.setRoleName(name))
@@ -80,18 +84,21 @@ class UpdateRolePart extends React.Component {
 
   renderPurposeField({runMutation}) {
     let role = this.role
+    let purpose = this.getFormField("rolePurpose")
+    let origPurpose = this.state.origForm.get("rolePurpose")
+    let toUpdate = (purpose != origPurpose)
     return <div className="form-group">
       <label htmlFor={"role_"+role.id+"_purpose"}>Purpose</label>
       <input type="text"
         id={"role_"+role.id+"_purpose"}
-        className="form-control"
-        value={this.getFormField("rolePurpose")}
+        className={"form-control" + (toUpdate ? " u-to-update" : "")}
+        value={purpose}
         onChange={(e) => {
           let purpose = e.target.value
           this.updateForm((f) => f.setRolePurpose(purpose))
           this.queueSaveProposalPart(runMutation)
         }} />
-      <p>The latest purpose is: {this.getFormField("rolePurpose")}</p>
+      <p>The latest purpose is: {purpose}</p>
     </div>
   }
 
@@ -101,11 +108,12 @@ class UpdateRolePart extends React.Component {
       ? domains[domains.length-1].uuid
       : null)
     return <div className="form-group">
+      <hr />
       <h4>Domains</h4>
       {domains.map((domain) => {
         return <div key={domain.uuid} className="form-group u-relative">
           <input type="text"
-            className={"form-control " + (domain.toDelete ? "u-input-delete" : "")}
+            className={"form-control" + (domain.toCreate ? " u-to-create" : "") + (domain.toUpdate ? " u-to-update" : "") + (domain.toDelete ? " u-to-delete" : "")}
             value={domain.name}
             ref={(input) => {
               if (input && focusOn == domain.uuid) {
@@ -138,6 +146,55 @@ class UpdateRolePart extends React.Component {
         onClick={(e) => {
           this.updateForm((f) => f.createDomain())
           this.setState({focusOn: "last_domain"})
+          this.queueSaveProposalPart(runMutation)
+        }} />
+    </div>
+  }
+
+  renderAcctsSection({runMutation}) {
+    let accts = this.getFormField("accts")
+    let focusOn = (this.state.focusOn == "last_acct"
+      ? accts[accts.length-1].uuid
+      : null)
+    return <div className="form-group">
+      <hr />
+      <h4>Accountabilities</h4>
+      {accts.map((acct) => {
+        return <div key={acct.uuid} className="form-group u-relative">
+          <input type="text"
+            className={"form-control" + (acct.toCreate ? " u-to-create" : "") + (acct.toUpdate ? " u-to-update" : "") + (acct.toDelete ? " u-to-delete" : "")}
+            value={acct.name}
+            ref={(input) => {
+              if (input && focusOn == acct.uuid) {
+                input.focus()
+                this.setState({focusOn: null})
+              }
+            }}
+            onChange={(e) => {
+              let value = e.target.value
+              this.updateForm((f) => f.updateAcct(acct.uuid, value))
+              this.queueSaveProposalPart(runMutation)
+            }} />
+          <div className="u-abs-top-right">
+            <a href="#" className={acct.toDelete ? "" : "text-danger"}
+              onClick={(e) => {
+                e.preventDefault()
+                this.updateForm((f) => f.deleteAcct(acct.uuid))
+                this.queueSaveProposalPart(runMutation)
+              }}>
+              <i className="icon">{acct.toDelete ? "delete_forever" : "delete"}</i>
+            </a>
+          </div>
+        </div>
+      })}
+
+      <input type="text"
+        className="form-control"
+        placeholder="Add a acct..."
+        defaultValue=""
+        onClick={(e) => {
+          this.updateForm((f) => f.createAcct())
+          this.setState({focusOn: "last_acct"})
           this.queueSaveProposalPart(runMutation)
         }} />
     </div>
