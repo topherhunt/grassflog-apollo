@@ -3,7 +3,7 @@ import PropTypes from "prop-types"
 import {Mutation} from "react-apollo"
 import _ from "underscore"
 import {updatePartMutation} from "../../../apollo/queries"
-import FormObjectManager from "./form_object_manager"
+import {FormObject, ConversionLogic} from "./proposal_change_helpers"
 
 const raise = (message) => { console.error(message); abort() }
 const randomUuid = () => Math.random().toString(36).substring(7)
@@ -24,17 +24,17 @@ class UpdateRolePart extends React.Component {
     // the latest state given all of the user's proposed changes (within this part).
     // TODO: What do we use origForm for again? Is it used anywhere in the renderer, or
     // will we only need it when diffing to compute changes?
-    const origForm = FormObjectManager.newFormObjectForUpdateRolePart(this.role)
-    const updatedForm = FormObjectManager.simulateChanges(origForm, props.part.changes)
-    this.state = {origForm, updatedForm}
+    let origForm = new FormObject
+    origForm.setInitialData("update_role", this.role)
+    let currentForm = ConversionLogic.applyChanges(origForm, props.part.changes)
+    this.state = {origForm, currentForm}
 
-    this.runDebouncedMutation = _.debounce((runMutation) => {
-      const changelist = FormObjectManager.computeChanges(
-        this.state.origForm,
-        this.state.updatedForm)
-      console.log("Generated changelist: ", changelist)
+    // Any of the event handlers below can trigger a debounced mutation by calling this.
+    this.queueSaveProposalPart = _.debounce((runMutation) => {
       console.log("Running updatePartMutation.")
-      const changes_json = JSON.stringify(changelist)
+      const {origForm, currentForm} = this.state
+      const changeList = ConversionLogic.computeChanges(origForm, currentForm)
+      const changes_json = JSON.stringify(changeList.changes)
       console.log("changes_json is: ", changes_json)
       runMutation({variables: {id: this.props.part.id, changes_json: changes_json}})
       // this.setState({updatePending: false})
@@ -42,22 +42,21 @@ class UpdateRolePart extends React.Component {
   }
 
   render() {
-    console.log("updatedForm is: ", this.state.updatedForm)
+    console.log("currentForm is: ", this.state.currentForm)
     const part = this.props.part
     return <Mutation mutation={updatePartMutation}>
       {(runMutation, {called, loading, data}) => (
         <div>
           <h4>Update role: {this.role.name}</h4>
-          <div className="small text-muted">Part ID: {part.id}, type: {part.type}, targetId: {part.targetId}</div>
+          <div className="small text-muted">
+            Part ID: {part.id},
+            type: {part.type},
+            targetId: {part.targetId}
+          </div>
 
           {this.renderNameField({runMutation})}
-
           {this.renderPurposeField({runMutation})}
-
           {this.renderDomainsSection({runMutation})}
-
-
-
         </div>
       )}
     </Mutation>
@@ -70,10 +69,11 @@ class UpdateRolePart extends React.Component {
       <input type="text"
         id={"role_"+role.id+"_name"}
         className="form-control"
-        value={this.state.updatedForm.attrs.name}
+        value={this.getFormField("roleName")}
         onChange={(e) => {
-          this.updateRoleName(e.target.value)
-          this.runDebouncedMutation(runMutation)
+          let name = e.target.value
+          this.updateForm((f) => f.setRoleName(name))
+          this.queueSaveProposalPart(runMutation)
         }} />
     </div>
   }
@@ -85,104 +85,75 @@ class UpdateRolePart extends React.Component {
       <input type="text"
         id={"role_"+role.id+"_purpose"}
         className="form-control"
-        value={this.state.updatedForm.attrs.purpose}
+        value={this.getFormField("rolePurpose")}
         onChange={(e) => {
-          this.updateRolePurpose(e.target.value)
-          // TODO: Where is the best place to trigger the mutation?
-          // I don't need to pass all params, the function has the this-context so it
-          // can derive the changelist and the relevant ids as needed.
-          // this.runDebouncedMutation(runMutation)
+          let purpose = e.target.value
+          this.updateForm((f) => f.setRolePurpose(purpose))
+          this.queueSaveProposalPart(runMutation)
         }} />
-      <p>The latest purpose is: {this.state.updatedForm.attrs.purpose}</p>
+      <p>The latest purpose is: {this.getFormField("rolePurpose")}</p>
     </div>
   }
 
   renderDomainsSection({runMutation}) {
-    <div className="form-group">
+    let domains = this.getFormField("domains")
+    let focusOn = (this.state.focusOn == "last_domain"
+      ? domains[domains.length-1].uuid
+      : null)
+    return <div className="form-group">
       <h4>Domains</h4>
-      {this.state.updatedForm.domains.map((domain) =>
-        <div key={domain.uuid} className="form-group u-relative">
+      {domains.map((domain) => {
+        return <div key={domain.uuid} className="form-group u-relative">
           <input type="text"
-            className={"form-control " + (domain.delete ? "u-input-delete" : "")}
+            className={"form-control " + (domain.toDelete ? "u-input-delete" : "")}
             value={domain.name}
             ref={(input) => {
-              if (input && this.state.focusOnInput == domain.uuid) {
+              if (input && focusOn == domain.uuid) {
                 input.focus()
-                this.setState({focusOnInput: null})
+                this.setState({focusOn: null})
               }
             }}
             onChange={(e) => {
-              this.updateDomain(domain.uuid, e.target.value)
-              {/*this.runDebouncedMutation(runMutation)*/}
+              let value = e.target.value
+              this.updateForm((f) => f.updateDomain(domain.uuid, value))
+              this.queueSaveProposalPart(runMutation)
             }} />
           <div className="u-abs-top-right">
-            <a href="#" className={domain.delete ? "" : "text-danger"}
+            <a href="#" className={domain.toDelete ? "" : "text-danger"}
               onClick={(e) => {
-                console.log("Clicked!")
                 e.preventDefault()
-                this.deleteDomain(domain.uuid)
+                this.updateForm((f) => f.deleteDomain(domain.uuid))
+                this.queueSaveProposalPart(runMutation)
               }}>
-              <i className="icon">{domain.delete ? "delete_forever" : "delete"}</i>
+              <i className="icon">{domain.toDelete ? "delete_forever" : "delete"}</i>
             </a>
           </div>
         </div>
-      )}
-      {/* For each domain in this.latestForm, render a div for it */}
+      })}
 
       <input type="text"
         className="form-control"
         placeholder="Add a domain..."
         defaultValue=""
         onClick={(e) => {
-          this.createDomain()
+          this.updateForm((f) => f.createDomain())
+          this.setState({focusOn: "last_domain"})
+          this.queueSaveProposalPart(runMutation)
         }} />
     </div>
   }
 
   //
-  // Update handlers
+  // Helpers for accessing & managing the in-state currentForm
   //
 
-  updateRoleName(newName) {
-    this.setState((state, props) => {
-      state.updatedForm.attrs.name = newName
-      return state
-    })
+  getFormField(field) {
+    return this.state.currentForm.get(field)
   }
 
-  updateRolePurpose(newPurpose) {
-    this.setState((state, props) => {
-      state.updatedForm.attrs.purpose = newPurpose
-      return state
-    })
-  }
-
-  createDomain() {
-    this.setState((state, props) => {
-      const uuid = randomUuid()
-      let newDomain = {id: null, uuid: uuid, name: "", create: true}
-      state.updatedForm.domains = state.updatedForm.domains.concat(newDomain)
-      state.focusOnInput = uuid
-      return state
-    })
-  }
-
-  updateDomain(uuid, newName) {
-    this.setState((state, props) => {
-      let domain = state.updatedForm.domains.find((d) => d.uuid == uuid)
-      domain.name = newName
-      if (!domain.create) { domain.update = true }
-      return state
-    })
-  }
-
-  deleteDomain(uuid) {
-    this.setState((state, props) => {
-      let domain = state.updatedForm.domains.find((d) => d.uuid == uuid)
-      domain.delete = !domain.delete
-      if (domain.create) {
-        raise("TODO: If a created domain is deleted, remove it from the updatedForm")
-      }
+  updateForm(formUpdaterFunc) {
+    this.setState((state) => {
+      formUpdaterFunc(state.currentForm)
       return state
     })
   }

@@ -6,7 +6,7 @@ import UsersList from "./users/users_list.jsx"
 const ApolloTest = () => (
   <ApolloProvider client={client}>
     <div>
-      <h2>My first Apollo app 🚀</h2>
+      <h2>🚀 Test Apollo query 🚀</h2>
       <UsersList />
     </div>
   </ApolloProvider>

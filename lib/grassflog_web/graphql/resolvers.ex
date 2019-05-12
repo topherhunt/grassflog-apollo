@@ -84,21 +84,29 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     part = Orgs.ProposalPart.get!(params.id)
     # verify ownership
     Orgs.Proposal.get!(part.proposal_id, proposer: current_user)
-
     # Nuke then re-insert the list of changes for this ProposalPart
     # TODO: Pull this out into a helper on the Orgs context?
     Orgs.ProposalChange.delete_all!(part: part)
     # We expect params.changes_json to be a JSON-serialized list of change params for all
     # this Part's changes. Each params is a map shaped like %{"type", "params"}.
     # TODO: params will likely be a JSON string. Does this also need parsing?
-    list_of_params_for_changes = Jason.decode!(params.changes_json)
-    Enum.each(list_of_params_for_changes, fn(change_params) ->
-      change_params = Map.merge(change_params, %{"proposal_part_id" => part.id})
-      Orgs.ProposalChange.insert!(change_params)
+    Jason.decode!(params.changes_json) |> Enum.each(fn(chg_attrs) ->
+      # Convert keys to underscore case. (They were written in JS-land and thus camelCased.)
+      chg_attrs = underscore_keys_recursively(chg_attrs)
+      chg_attrs = Map.merge(chg_attrs, %{"proposal_part_id" => part.id})
+      Orgs.ProposalChange.insert!(chg_attrs)
     end)
 
     {:ok, part}
   end
+
+  defp underscore_keys_recursively(%{} = map) do
+    Enum.into(map, %{}, fn({k, v}) ->
+      {Macro.underscore(k), underscore_keys_recursively(v)}
+    end)
+  end
+
+  defp underscore_keys_recursively(other), do: other
 
   def delete_proposal_part(_parent, params, resolution) do
     current_user = resolution.context.current_user
