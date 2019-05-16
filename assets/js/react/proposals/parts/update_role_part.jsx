@@ -9,6 +9,8 @@ import EditRoleNameSection from "./sections/edit_role_name_section.jsx"
 import EditRolePurposeSection from "./sections/edit_role_purpose_section.jsx"
 import EditRoleDomainsSection from "./sections/edit_role_domains_section.jsx"
 import EditRoleAcctsSection from "./sections/edit_role_accts_section.jsx"
+import ExpandOrCollapseRoleSection from "./sections/expand_or_collapse_role_section.jsx"
+import DeleteRoleSection from "./sections/delete_role_section.jsx"
 import MoveRolesSection from "./sections/move_roles_section.jsx"
 
 const raise = (message) => { console.error(message); abort() }
@@ -39,6 +41,7 @@ class UpdateRolePart extends React.Component {
     // console.log("currentForm is: ", this.state.currentForm)
     return <div>
       <h4>Update role: {this.partRole.name}</h4>
+
       <div className="small text-muted">
         Part ID: {this.props.part.id},
         type: {this.props.part.type},
@@ -63,124 +66,38 @@ class UpdateRolePart extends React.Component {
 
       <EditRoleDomainsSection
         domains={this.getFormField("domains")}
-        focusOn={this.state.focusOn}
         updateForm={this.updateForm.bind(this)}
         queueSaveProposalPart={this.queueSaveProposalPart}
       />
 
       <EditRoleAcctsSection
         accts={this.getFormField("accts")}
-        focusOn={this.state.focusOn}
         updateForm={this.updateForm.bind(this)}
         queueSaveProposalPart={this.queueSaveProposalPart}
       />
 
       <hr />
 
-      {this.renderExpandOrCollapseRoleSection()}
-      {this.renderDeleteRoleSection()}
+      <ExpandOrCollapseRoleSection
+        isCircle={this.partRole.isCircle}
+        getFormField={this.getFormField.bind(this)}
+        updateForm={this.updateForm.bind(this)}
+        queueSaveProposalPart={this.queueSaveProposalPart}
+      />
+
+      <DeleteRoleSection
+        isChecked={this.getFormField("deleteRole")}
+        updateForm={this.updateForm.bind(this)}
+        queueSaveProposalPart={this.queueSaveProposalPart}
+      />
 
       <MoveRolesSection
         proposalCircle={this.props.proposal.circle}
         partRole={this.partRole}
-        updateForm={this.updateForm.bind(this)}
         getFormField={this.getFormField.bind(this)}
+        updateForm={this.updateForm.bind(this)}
         queueSaveProposalPart={this.queueSaveProposalPart}
       />
-    </div>
-  }
-
-  renderAcctsSection() {
-    let accts = this.getFormField("accts")
-    let focusOn = (this.state.focusOn == "last_acct"
-      ? accts[accts.length-1].uuid
-      : null)
-    return <div className="form-group">
-      <hr />
-      <h5>Accountabilities</h5>
-      {accts.map((acct) => {
-        return <div key={acct.uuid} className="form-group u-relative">
-          <input type="text"
-            className={"form-control" + (acct.toCreate ? " u-to-create" : "") + (acct.toUpdate ? " u-to-update" : "") + (acct.toDelete ? " u-to-delete" : "")}
-            value={acct.name}
-            ref={(input) => {
-              if (input && focusOn == acct.uuid) {
-                input.focus()
-                this.setState({focusOn: null})
-              }
-            }}
-            onChange={(e) => {
-              let value = e.target.value
-              this.updateForm((f) => f.updateAcct(acct.uuid, value))
-              this.queueSaveProposalPart()
-            }} />
-          <div className="u-abs-top-right">
-            <a href="#" className={acct.toDelete ? "" : "text-danger"}
-              onClick={(e) => {
-                e.preventDefault()
-                this.updateForm((f) => f.deleteAcct(acct.uuid))
-                this.queueSaveProposalPart()
-              }}>
-              <i className="icon">{acct.toDelete ? "delete_forever" : "delete"}</i>
-            </a>
-          </div>
-        </div>
-      })}
-
-      <input type="text"
-        className="form-control"
-        placeholder="Add a acct..."
-        defaultValue=""
-        onClick={(e) => {
-          this.updateForm((f) => f.createAcct())
-          this.setState({focusOn: "last_acct"})
-          this.queueSaveProposalPart()
-        }} />
-    </div>
-  }
-
-  renderExpandOrCollapseRoleSection() {
-    if (this.partRole.isCircle) {
-      return <div>
-        <label>
-          <input type="checkbox" value="1"
-            checked={this.getFormField("collapseRole")}
-            onChange={(e) => {
-              let isChecked = e.target.checked
-              this.updateForm((f) => f.setCollapseRole(isChecked))
-              this.queueSaveProposalPart()
-            }} />
-          &nbsp; Collapse this circle
-        </label>
-      </div>
-    } else {
-      return <div>
-        <label>
-          <input type="checkbox" value="1"
-            checked={this.getFormField("expandRole")}
-            onChange={(e) => {
-              let isChecked = e.target.checked
-              this.updateForm((f) => f.setExpandRole(isChecked))
-              this.queueSaveProposalPart()
-            }} />
-          &nbsp; Expand this role into a circle
-        </label>
-      </div>
-    }
-  }
-
-  renderDeleteRoleSection() {
-    return <div>
-      <label>
-        <input type="checkbox" value="1"
-          checked={this.getFormField("deleteRole")}
-          onChange={(e) => {
-            let isChecked = e.target.checked
-            this.updateForm((f) => f.setDeleteRole(isChecked))
-            this.queueSaveProposalPart()
-          }} />
-        &nbsp; <span className="text-danger">Delete this role</span>
-      </label>
     </div>
   }
 
