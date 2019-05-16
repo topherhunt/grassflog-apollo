@@ -5,6 +5,10 @@ import {Mutation} from "react-apollo"
 import _ from "underscore"
 import {updatePartMutation} from "../../../apollo/queries"
 import {FormObject, ConversionLogic} from "./proposal_change_helpers"
+import EditRoleNameSection from "./sections/edit_role_name_section.jsx"
+import EditRolePurposeSection from "./sections/edit_role_purpose_section.jsx"
+import EditRoleDomainsSection from "./sections/edit_role_domains_section.jsx"
+import EditRoleAcctsSection from "./sections/edit_role_accts_section.jsx"
 import MoveRolesSection from "./sections/move_roles_section.jsx"
 
 const raise = (message) => { console.error(message); abort() }
@@ -20,26 +24,15 @@ class UpdateRolePart extends React.Component {
     // We track the state of this proposal builder section by using two form objects:
     // one to represent the "pristine" state of this ProposalPart and one to represent
     // the latest state given all of the user's proposed changes (within this part).
-    // TODO: What do we use origForm for again? Is it used anywhere in the renderer, or
-    // will we only need it when diffing to compute changes?
+    // TODO: Consider making origForm simply a property on the Form, so I can ask the form
+    // to compare values internally and I don't have to juggle two different form objects.
     let origForm = new FormObject
     origForm.setInitialData("update_role", this.partRole)
     let currentForm = ConversionLogic.applyChanges(origForm, props.part.changes)
     this.state = {origForm, currentForm}
 
     // Any of the event handlers below can trigger a debounced mutation by calling this.
-    this.queueSaveProposalPart = _.debounce(() => {
-      let partId = this.props.part.id
-      const {origForm, currentForm} = this.state
-      const changeList = ConversionLogic.computeChanges(origForm, currentForm)
-      const changesJson = JSON.stringify(changeList.changes)
-      console.log("Saving ProposalPart "+partId+" with changes: ", changesJson)
-      // Run the "Update ProposalPart" mutation func provided from ProposalPartContainer
-      this.props.runUpdatePartMutation({
-        variables: {id: this.props.part.id, changes_json: changesJson}
-      })
-      // this.setState({updatePending: false})
-    }, 500).bind(this)
+    this.queueSaveProposalPart = _.debounce(this.saveProposalPart, 500).bind(this)
   }
 
   render() {
@@ -52,11 +45,38 @@ class UpdateRolePart extends React.Component {
         targetId: {this.props.part.targetId}
       </div>
 
-      {this.renderNameField()}
-      {this.renderPurposeField()}
-      {this.renderDomainsSection()}
-      {this.renderAcctsSection()}
+      <EditRoleNameSection
+        roleId={this.partRole.id}
+        currentName={this.getFormField("roleName")}
+        origName={this.state.origForm.get("roleName")}
+        updateForm={this.updateForm.bind(this)}
+        queueSaveProposalPart={this.queueSaveProposalPart}
+      />
+
+      <EditRolePurposeSection
+        roleId={this.partRole.id}
+        currentPurpose={this.getFormField("rolePurpose")}
+        origPurpose={this.state.origForm.get("rolePurpose")}
+        updateForm={this.updateForm.bind(this)}
+        queueSaveProposalPart={this.queueSaveProposalPart}
+      />
+
+      <EditRoleDomainsSection
+        domains={this.getFormField("domains")}
+        focusOn={this.state.focusOn}
+        updateForm={this.updateForm.bind(this)}
+        queueSaveProposalPart={this.queueSaveProposalPart}
+      />
+
+      <EditRoleAcctsSection
+        accts={this.getFormField("accts")}
+        focusOn={this.state.focusOn}
+        updateForm={this.updateForm.bind(this)}
+        queueSaveProposalPart={this.queueSaveProposalPart}
+      />
+
       <hr />
+
       {this.renderExpandOrCollapseRoleSection()}
       {this.renderDeleteRoleSection()}
 
@@ -67,94 +87,6 @@ class UpdateRolePart extends React.Component {
         getFormField={this.getFormField.bind(this)}
         queueSaveProposalPart={this.queueSaveProposalPart}
       />
-    </div>
-  }
-
-  renderNameField() {
-    let role = this.partRole
-    let name = this.getFormField("roleName")
-    let origName = this.state.origForm.get("roleName")
-    let toUpdate = (name != origName)
-    return <div className="form-group">
-      <label htmlFor={"role_"+role.id+"_name"}>Name</label>
-      <input type="text"
-        id={"role_"+role.id+"_name"}
-        className={"form-control" + (toUpdate ? " u-to-update" : "")}
-        value={name}
-        onChange={(e) => {
-          let name = e.target.value
-          this.updateForm((f) => f.setRoleName(name))
-          this.queueSaveProposalPart()
-        }} />
-    </div>
-  }
-
-  renderPurposeField() {
-    let role = this.partRole
-    let purpose = this.getFormField("rolePurpose")
-    let origPurpose = this.state.origForm.get("rolePurpose")
-    let toUpdate = (purpose != origPurpose)
-    return <div className="form-group">
-      <label htmlFor={"role_"+role.id+"_purpose"}>Purpose</label>
-      <input type="text"
-        id={"role_"+role.id+"_purpose"}
-        className={"form-control" + (toUpdate ? " u-to-update" : "")}
-        value={purpose}
-        onChange={(e) => {
-          let purpose = e.target.value
-          this.updateForm((f) => f.setRolePurpose(purpose))
-          this.queueSaveProposalPart()
-        }} />
-      <p>The latest purpose is: {purpose}</p>
-    </div>
-  }
-
-  renderDomainsSection() {
-    let domains = this.getFormField("domains")
-    let focusOn = (this.state.focusOn == "last_domain"
-      ? domains[domains.length-1].uuid
-      : null)
-    return <div className="form-group">
-      <hr />
-      <h5>Domains</h5>
-      {domains.map((domain) => {
-        return <div key={domain.uuid} className="form-group u-relative">
-          <input type="text"
-            className={"form-control" + (domain.toCreate ? " u-to-create" : "") + (domain.toUpdate ? " u-to-update" : "") + (domain.toDelete ? " u-to-delete" : "")}
-            value={domain.name}
-            ref={(input) => {
-              if (input && focusOn == domain.uuid) {
-                input.focus()
-                this.setState({focusOn: null})
-              }
-            }}
-            onChange={(e) => {
-              let value = e.target.value
-              this.updateForm((f) => f.updateDomain(domain.uuid, value))
-              this.queueSaveProposalPart()
-            }} />
-          <div className="u-abs-top-right">
-            <a href="#" className={domain.toDelete ? "" : "text-danger"}
-              onClick={(e) => {
-                e.preventDefault()
-                this.updateForm((f) => f.deleteDomain(domain.uuid))
-                this.queueSaveProposalPart()
-              }}>
-              <i className="icon">{domain.toDelete ? "delete_forever" : "delete"}</i>
-            </a>
-          </div>
-        </div>
-      })}
-
-      <input type="text"
-        className="form-control"
-        placeholder="Add a domain..."
-        defaultValue=""
-        onClick={(e) => {
-          this.updateForm((f) => f.createDomain())
-          this.setState({focusOn: "last_domain"})
-          this.queueSaveProposalPart()
-        }} />
     </div>
   }
 
@@ -256,6 +188,19 @@ class UpdateRolePart extends React.Component {
     let roleId = props.part.targetId || raise("targetId is required, but is blank!")
     return props.proposal.circle.children.find((r) => r.id == roleId) ||
       raise("Can't find child role by id: "+roleId)
+  }
+
+  saveProposalPart() {
+    let partId = this.props.part.id
+    const {origForm, currentForm} = this.state
+    const changeList = ConversionLogic.computeChanges(origForm, currentForm)
+    const changesJson = JSON.stringify(changeList.changes)
+    console.log("Saving ProposalPart "+partId+" with changes: ", changesJson)
+    // Run the "Update ProposalPart" mutation func provided from ProposalPartContainer
+    this.props.runUpdatePartMutation({
+      variables: {id: this.props.part.id, changes_json: changesJson}
+    })
+    // this.setState({updatePending: false})
   }
 
   //

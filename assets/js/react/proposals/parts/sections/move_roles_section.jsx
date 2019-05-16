@@ -2,9 +2,6 @@ import React from "react"
 import PropTypes from "prop-types"
 import Select from "react-select"
 
-// TODO: I'd like to deduplicate the mutation into a ProposalPartMutationWrapper.
-// Do that after I've proven out the basics with an UpdateRole part.
-
 class MoveRolesSection extends React.Component {
   constructor(props) {
     super(props)
@@ -135,9 +132,7 @@ MoveRolesSection.propTypes = {
   partRole: PropTypes.object.isRequired,
   updateForm: PropTypes.func.isRequired,
   getFormField: PropTypes.func.isRequired,
-  queueSaveProposalPart: PropTypes.func.isRequired,
+  queueSaveProposalPart: PropTypes.func.isRequired
 }
-
-const raise = (message) => console.error(message)
 
 export default MoveRolesSection
