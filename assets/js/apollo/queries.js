@@ -6,6 +6,11 @@ const allUsersQuery = gql`
   }
 `
 
+// Fetch the proposal for the proposal builder UI.
+// Considerations:
+// * Need the context circle and thorough information on all child roles
+// * Need basic info on grandchild roles (so the user can move them up)
+// * The ProposalChange params is a serialized JSON string. We manually de/encode it.
 const proposalQuery = gql`
   query Proposal($id: ID!) {
     proposal(id: $id) {
@@ -20,8 +25,13 @@ const proposalQuery = gql`
           name
           parent_id
           purpose
+          isCircle
           domains { id role_id name }
           accts { id role_id name }
+          children {
+            id
+            name
+          }
         }
       }
       proposer { id name email }

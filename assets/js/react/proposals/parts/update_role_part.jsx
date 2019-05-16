@@ -1,5 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
+import Select from "react-select"
 import {Mutation} from "react-apollo"
 import _ from "underscore"
 import {updatePartMutation} from "../../../apollo/queries"
@@ -18,6 +19,11 @@ class UpdateRolePart extends React.Component {
     const roleId = props.part.targetId || raise("targetId is required, but is blank!")
     this.role = props.proposal.circle.children.find((r) => r.id == roleId) ||
       raise("Can't find child role by id: "+roleId)
+
+    // All roles potentially relevant to this Part, for easy name lookups
+    this.allKnownRoles = [props.proposal.circle].concat(
+      props.proposal.circle.children,
+      this.role.children)
 
     // We track the state of this proposal builder section by using two form objects:
     // one to represent the "pristine" state of this ProposalPart and one to represent
@@ -58,6 +64,10 @@ class UpdateRolePart extends React.Component {
           {this.renderPurposeField({runMutation})}
           {this.renderDomainsSection({runMutation})}
           {this.renderAcctsSection({runMutation})}
+          <hr />
+          {this.renderExpandOrCollapseRoleSection({runMutation})}
+          {this.renderDeleteRoleSection({runMutation})}
+          {this.renderMoveRolesSection({runMutation})}
         </div>
       )}
     </Mutation>
@@ -197,6 +207,166 @@ class UpdateRolePart extends React.Component {
           this.setState({focusOn: "last_acct"})
           this.queueSaveProposalPart(runMutation)
         }} />
+    </div>
+  }
+
+  renderExpandOrCollapseRoleSection({runMutation}) {
+    if (this.role.isCircle) {
+      return <div>
+        <label>
+          <input type="checkbox" value="1"
+            checked={this.getFormField("collapseRole")}
+            onChange={(e) => {
+              let isChecked = e.target.checked
+              this.updateForm((f) => f.setCollapseRole(isChecked))
+              this.queueSaveProposalPart(runMutation)
+            }} />
+          &nbsp; Collapse this circle
+        </label>
+      </div>
+    } else {
+      return <div>
+        <label>
+          <input type="checkbox" value="1"
+            checked={this.getFormField("expandRole")}
+            onChange={(e) => {
+              let isChecked = e.target.checked
+              this.updateForm((f) => f.setExpandRole(isChecked))
+              this.queueSaveProposalPart(runMutation)
+            }} />
+          &nbsp; Expand this role into a circle
+        </label>
+      </div>
+    }
+  }
+
+  renderDeleteRoleSection({runMutation}) {
+    return <div>
+      <label>
+        <input type="checkbox" value="1"
+          checked={this.getFormField("deleteRole")}
+          onChange={(e) => {
+            let isChecked = e.target.checked
+            this.updateForm((f) => f.setDeleteRole(isChecked))
+            this.queueSaveProposalPart(runMutation)
+          }} />
+        &nbsp; <span className="text-danger">Delete this role</span>
+      </label>
+    </div>
+  }
+
+  // TODO: Definitely extract to its own component
+  renderMoveRolesSection({runMutation}) {
+    let {canMoveStuffIn, canMoveStuffOut} = this.decideIfCanMoveStuff()
+    if (!canMoveStuffIn && !canMoveStuffOut) {
+      return <div></div>
+    }
+
+    return <div>
+      <hr />
+      <h4>Move roles</h4>
+      {this.renderMoveRolesSectionContent({runMutation})}
+    </div>
+  }
+
+  decideIfCanMoveStuff() {
+    let isCircle = this.role.isCircle
+    let expandRole = this.getFormField("expandRole")
+    let collapseRole = this.getFormField("collapseRole")
+    let deleteRole = this.getFormField("deleteRole")
+
+    return {
+      canMoveStuffIn: (isCircle || expandRole) && !collapseRole && !deleteRole,
+      canMoveStuffOut: isCircle
+    }
+  }
+
+  // TODO: Remove this if I like the static header text better
+  labelForMoveRolesSection() {
+    let {canMoveStuffIn, canMoveStuffOut} = this.decideIfCanMoveStuff()
+    if (canMoveStuffIn && canMoveStuffOut) {
+      return "Move stuff in / out of this role..."
+    } else if (canMoveStuffIn) {
+      return "Move stuff into this role..."
+    } else if (canMoveStuffOut) {
+      return "Move stuff out of this role..."
+    }
+  }
+
+  // You may move DOWN any child of the proposal's circle, except the part target role,
+  // unless you've already moved that role in this proposal part.
+  moveRoleDownOpts() {
+    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
+    return this.props.proposal.circle.children
+      .filter((r) => r.id != this.role.id)
+      .filter((r) => alreadyMovedRoleIds.indexOf(+r.id) == -1)
+      .map((r) => ({label: r.name, value: r.id}))
+  }
+
+  // You may move UP any child of the part target role,
+  // unless you've already moved that role in this proposal part.
+  moveRoleUpOpts() {
+    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
+    return this.role.children
+      .filter((r) => alreadyMovedRoleIds.indexOf(r.id) == -1)
+      .map((r) => ({label: r.name, value: r.id}))
+  }
+
+  renderMoveRolesSectionContent({runMutation}) {
+    let {canMoveStuffIn, canMoveStuffOut} = this.decideIfCanMoveStuff()
+
+    return <div>
+      <div className="row form-group">
+        <div className="col-sm-6">
+          Move a role <strong>down into</strong> "{this.role.name}":
+          <Select
+            placeholder="Select a role..."
+            options={this.moveRoleDownOpts()}
+            selected=""
+            onChange={(selected) => {
+              let roleId = parseInt(selected.value)
+              let newParentId = this.role.id
+              this.updateForm((f) => f.createRoleMove(roleId, newParentId))
+              this.queueSaveProposalPart(runMutation)
+            }}
+          />
+        </div>
+        <div className="col-sm-6">
+          Move a role <strong>up to</strong> "{this.props.proposal.circle.name}":
+          <Select
+            placeholder="Select a role..."
+            options={this.moveRoleUpOpts()}
+            selected=""
+            onChange={(selected) => {
+              let roleId = parseInt(selected.value)
+              let newParentId = this.props.proposal.circle.id
+              this.updateForm((f) => f.createRoleMove(roleId, newParentId))
+              this.queueSaveProposalPart(runMutation)
+            }}
+          />
+        </div>
+      </div>
+      <table className="table">
+        <tbody>
+          {this.getFormField("roleMoves").map((move) => {
+            let targetRole = this.allKnownRoles.find((r) => +r.id == +move.targetId)
+            let parentRole = this.allKnownRoles.find((r) => +r.id == +move.parentId)
+            let direction = (parentRole.id == this.role.id ? "into" : "up to")
+            return <tr key={"move-"+move.targetId+"-"+move.parentId}>
+              <td>Move "{targetRole.name}" {direction} "{parentRole.name}"</td>
+              <td>
+                <a href="#" className="text-danger"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    this.updateForm((f) => f.deleteRoleMove(move.uuid))
+                    this.queueSaveProposalPart(runMutation)
+                  }}
+                >×</a>
+              </td>
+            </tr>
+          })}
+        </tbody>
+      </table>
     </div>
   }
 

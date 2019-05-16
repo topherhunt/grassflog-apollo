@@ -266,11 +266,6 @@ const ConversionLogic = {
       changeList.add({type: "expand_role", targetId: roleId})
     }
 
-    // Are roles being moved in or out?
-    form2.get("roleMoves").map(function(move) {
-      changeList.add({targetId: move.targetId, parentId: move.parentId})
-    })
-
     // Is the role being collapsed?
     if (form2.get("collapseRole")) {
       changeList.add({type: "collapse_role", targetId: roleId})
@@ -280,6 +275,15 @@ const ConversionLogic = {
     if (form2.get("deleteRole")) {
       changeList.add({type: "delete_role", targetId: roleId})
     }
+
+    // Are roles being moved in or out?
+    form2.get("roleMoves").map(function(move) {
+      changeList.add({
+        type: "move_role",
+        targetId: move.targetId,
+        params: {parentId: move.parentId}
+      })
+    })
 
     // Are new domains added?
     form2.get("domains").filter((i) => !!i.toCreate).map(function(domain) {
