@@ -9,6 +9,9 @@
 .u-gap-10 { width: 100%; height: 10px; }
 .u-gap-20 { width: 100%; height: 20px; }
 
+.u-relative { position: relative; }
+.u-abs-top-right { position: absolute; top: 7px; right: 10px; }
+
 /*
   Blocks
 */
@@ -31,10 +34,6 @@
 .u-to-update { background-color: #fff3cd; }
 .u-to-delete { background-color: #fee; }
 .u-to-create { background-color: #d4edda; }
-
-.u-relative { position: relative; }
-
-.u-abs-top-right { position: absolute; top: 7px; right: 10px; }
 
 /*
   Text
