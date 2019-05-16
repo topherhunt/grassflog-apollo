@@ -191,7 +191,7 @@ const ConversionLogic = {
   // Execute a single change and return the transformed Form object.
   // This is basically a reducer.
   applyChange: function(form, change) {
-    console.log("Simulating change: ", change)
+    // console.log("Simulating change: ", change)
     const type = change.type
     // Graphql provides the params field as a string; we need to manually decode it.
     const params = JSON.parse(change.params)

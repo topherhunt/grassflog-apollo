@@ -5,6 +5,7 @@ import {Mutation} from "react-apollo"
 import _ from "underscore"
 import {updatePartMutation} from "../../../apollo/queries"
 import {FormObject, ConversionLogic} from "./proposal_change_helpers"
+import MoveRolesSection from "./sections/move_roles_section.jsx"
 
 const raise = (message) => { console.error(message); abort() }
 const randomUuid = () => Math.random().toString(36).substring(7)
@@ -17,13 +18,13 @@ class UpdateRolePart extends React.Component {
 
     // Look up the role that's the scope for this Part
     const roleId = props.part.targetId || raise("targetId is required, but is blank!")
-    this.role = props.proposal.circle.children.find((r) => r.id == roleId) ||
+    this.partRole = props.proposal.circle.children.find((r) => r.id == roleId) ||
       raise("Can't find child role by id: "+roleId)
 
     // All roles potentially relevant to this Part, for easy name lookups
     this.allKnownRoles = [props.proposal.circle].concat(
       props.proposal.circle.children,
-      this.role.children)
+      this.partRole.children)
 
     // We track the state of this proposal builder section by using two form objects:
     // one to represent the "pristine" state of this ProposalPart and one to represent
@@ -31,7 +32,7 @@ class UpdateRolePart extends React.Component {
     // TODO: What do we use origForm for again? Is it used anywhere in the renderer, or
     // will we only need it when diffing to compute changes?
     let origForm = new FormObject
-    origForm.setInitialData("update_role", this.role)
+    origForm.setInitialData("update_role", this.partRole)
     let currentForm = ConversionLogic.applyChanges(origForm, props.part.changes)
     this.state = {origForm, currentForm}
 
@@ -53,7 +54,7 @@ class UpdateRolePart extends React.Component {
     return <Mutation mutation={updatePartMutation}>
       {(runMutation, {called, loading, data}) => (
         <div>
-          <h4>Update role: {this.role.name}</h4>
+          <h4>Update role: {this.partRole.name}</h4>
           <div className="small text-muted">
             Part ID: {part.id},
             type: {part.type},
@@ -74,7 +75,7 @@ class UpdateRolePart extends React.Component {
   }
 
   renderNameField({runMutation}) {
-    let role = this.role
+    let role = this.partRole
     let name = this.getFormField("roleName")
     let origName = this.state.origForm.get("roleName")
     let toUpdate = (name != origName)
@@ -93,7 +94,7 @@ class UpdateRolePart extends React.Component {
   }
 
   renderPurposeField({runMutation}) {
-    let role = this.role
+    let role = this.partRole
     let purpose = this.getFormField("rolePurpose")
     let origPurpose = this.state.origForm.get("rolePurpose")
     let toUpdate = (purpose != origPurpose)
@@ -211,7 +212,7 @@ class UpdateRolePart extends React.Component {
   }
 
   renderExpandOrCollapseRoleSection({runMutation}) {
-    if (this.role.isCircle) {
+    if (this.partRole.isCircle) {
       return <div>
         <label>
           <input type="checkbox" value="1"
@@ -255,129 +256,17 @@ class UpdateRolePart extends React.Component {
     </div>
   }
 
-  // TODO: Definitely extract to its own component
+  // TODO: Some of these props feel redundant. Maybe this is the wrong boundary?
   renderMoveRolesSection({runMutation}) {
-    let {canMoveStuffDown, canMoveStuffUp} = this.decideIfCanMoveStuff()
-    if (!canMoveStuffDown && !canMoveStuffUp) {
-      return <div></div>
-    }
-
-    return <div>
-      <hr />
-      <h5>Move roles</h5>
-      {this.renderMoveRolesSectionContent({runMutation})}
-    </div>
-  }
-
-  decideIfCanMoveStuff() {
-    let isCircle = this.role.isCircle
-    let expandRole = this.getFormField("expandRole")
-    let collapseRole = this.getFormField("collapseRole")
-    let deleteRole = this.getFormField("deleteRole")
-
-    return {
-      canMoveStuffDown: (isCircle || expandRole) && !collapseRole && !deleteRole,
-      canMoveStuffUp: isCircle
-    }
-  }
-
-  // TODO: Remove this if I like the static header text better
-  labelForMoveRolesSection() {
-    let {canMoveStuffDown, canMoveStuffUp} = this.decideIfCanMoveStuff()
-    if (canMoveStuffDown && canMoveStuffUp) {
-      return "Move stuff in / out of this role..."
-    } else if (canMoveStuffDown) {
-      return "Move stuff into this role..."
-    } else if (canMoveStuffUp) {
-      return "Move stuff out of this role..."
-    }
-  }
-
-  renderMoveRoleDownDropdown({runMutation}) {
-    return <div className="col-sm-6">
-      Move a role <strong>down into</strong> "{this.role.name}":
-      <Select
-        placeholder="Select a role..."
-        options={this.moveRoleDownOpts()}
-        selected=""
-        onChange={(selected) => {
-          let roleId = parseInt(selected.value)
-          let newParentId = this.role.id
-          this.updateForm((f) => f.createRoleMove(roleId, newParentId))
-          this.queueSaveProposalPart(runMutation)
-        }}
-      />
-    </div>
-  }
-
-  renderMoveRoleUpDropdown({runMutation}) {
-    return <div className="col-sm-6">
-      Move a role <strong>up to</strong> "{this.props.proposal.circle.name}":
-      <Select
-        placeholder="Select a role..."
-        options={this.moveRoleUpOpts()}
-        selected=""
-        onChange={(selected) => {
-          let roleId = parseInt(selected.value)
-          let newParentId = this.props.proposal.circle.id
-          this.updateForm((f) => f.createRoleMove(roleId, newParentId))
-          this.queueSaveProposalPart(runMutation)
-        }}
-      />
-    </div>
-  }
-
-  renderMoveRolesSectionContent({runMutation}) {
-    let {canMoveStuffDown, canMoveStuffUp} = this.decideIfCanMoveStuff()
-    console.log({canMoveStuffDown, canMoveStuffUp})
-
-    return <div>
-      <div className="row form-group">
-        {canMoveStuffDown ? this.renderMoveRoleDownDropdown({runMutation}) : ""}
-        {canMoveStuffUp   ? this.renderMoveRoleUpDropdown({runMutation})   : ""}
-      </div>
-      {/* TODO: For better UI, the list of roles being moved should be divided into the in vs. out category and shown as part of that column, and hidden (reverted?) if that move-type is unavailable. */}
-      <table className="table">
-        <tbody>
-          {this.getFormField("roleMoves").map((move) => {
-            let targetRole = this.allKnownRoles.find((r) => +r.id == +move.targetId)
-            let parentRole = this.allKnownRoles.find((r) => +r.id == +move.parentId)
-            let direction = (parentRole.id == this.role.id ? "into" : "up to")
-            return <tr key={"move-"+move.targetId+"-"+move.parentId}>
-              <td>Move "{targetRole.name}" {direction} "{parentRole.name}"</td>
-              <td>
-                <a href="#" className="text-danger"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    this.updateForm((f) => f.deleteRoleMove(move.uuid))
-                    this.queueSaveProposalPart(runMutation)
-                  }}
-                >×</a>
-              </td>
-            </tr>
-          })}
-        </tbody>
-      </table>
-    </div>
-  }
-
-  // You may move DOWN any child of the proposal's circle, except the part target role,
-  // unless you've already moved that role in this proposal part.
-  moveRoleDownOpts() {
-    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
-    return this.props.proposal.circle.children
-      .filter((r) => r.id != this.role.id)
-      .filter((r) => alreadyMovedRoleIds.indexOf(+r.id) == -1)
-      .map((r) => ({label: r.name, value: r.id}))
-  }
-
-  // You may move UP any child of the part target role,
-  // unless you've already moved that role in this proposal part.
-  moveRoleUpOpts() {
-    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
-    return this.role.children
-      .filter((r) => alreadyMovedRoleIds.indexOf(r.id) == -1)
-      .map((r) => ({label: r.name, value: r.id}))
+    return <MoveRolesSection
+      proposalCircle={this.props.proposal.circle}
+      partRole={this.partRole}
+      allKnownRoles={this.allKnownRoles}
+      updateForm={this.updateForm.bind(this)}
+      getFormField={this.getFormField.bind(this)}
+      queueSaveProposalPart={this.queueSaveProposalPart}
+      runMutation={runMutation}
+    />
   }
 
   //
