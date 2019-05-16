@@ -119,7 +119,7 @@ class UpdateRolePart extends React.Component {
       : null)
     return <div className="form-group">
       <hr />
-      <h4>Domains</h4>
+      <h5>Domains</h5>
       {domains.map((domain) => {
         return <div key={domain.uuid} className="form-group u-relative">
           <input type="text"
@@ -168,7 +168,7 @@ class UpdateRolePart extends React.Component {
       : null)
     return <div className="form-group">
       <hr />
-      <h4>Accountabilities</h4>
+      <h5>Accountabilities</h5>
       {accts.map((acct) => {
         return <div key={acct.uuid} className="form-group u-relative">
           <input type="text"
@@ -257,14 +257,14 @@ class UpdateRolePart extends React.Component {
 
   // TODO: Definitely extract to its own component
   renderMoveRolesSection({runMutation}) {
-    let {canMoveStuffIn, canMoveStuffOut} = this.decideIfCanMoveStuff()
-    if (!canMoveStuffIn && !canMoveStuffOut) {
+    let {canMoveStuffDown, canMoveStuffUp} = this.decideIfCanMoveStuff()
+    if (!canMoveStuffDown && !canMoveStuffUp) {
       return <div></div>
     }
 
     return <div>
       <hr />
-      <h4>Move roles</h4>
+      <h5>Move roles</h5>
       {this.renderMoveRolesSectionContent({runMutation})}
     </div>
   }
@@ -276,76 +276,67 @@ class UpdateRolePart extends React.Component {
     let deleteRole = this.getFormField("deleteRole")
 
     return {
-      canMoveStuffIn: (isCircle || expandRole) && !collapseRole && !deleteRole,
-      canMoveStuffOut: isCircle
+      canMoveStuffDown: (isCircle || expandRole) && !collapseRole && !deleteRole,
+      canMoveStuffUp: isCircle
     }
   }
 
   // TODO: Remove this if I like the static header text better
   labelForMoveRolesSection() {
-    let {canMoveStuffIn, canMoveStuffOut} = this.decideIfCanMoveStuff()
-    if (canMoveStuffIn && canMoveStuffOut) {
+    let {canMoveStuffDown, canMoveStuffUp} = this.decideIfCanMoveStuff()
+    if (canMoveStuffDown && canMoveStuffUp) {
       return "Move stuff in / out of this role..."
-    } else if (canMoveStuffIn) {
+    } else if (canMoveStuffDown) {
       return "Move stuff into this role..."
-    } else if (canMoveStuffOut) {
+    } else if (canMoveStuffUp) {
       return "Move stuff out of this role..."
     }
   }
 
-  // You may move DOWN any child of the proposal's circle, except the part target role,
-  // unless you've already moved that role in this proposal part.
-  moveRoleDownOpts() {
-    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
-    return this.props.proposal.circle.children
-      .filter((r) => r.id != this.role.id)
-      .filter((r) => alreadyMovedRoleIds.indexOf(+r.id) == -1)
-      .map((r) => ({label: r.name, value: r.id}))
+  renderMoveRoleDownDropdown({runMutation}) {
+    return <div className="col-sm-6">
+      Move a role <strong>down into</strong> "{this.role.name}":
+      <Select
+        placeholder="Select a role..."
+        options={this.moveRoleDownOpts()}
+        selected=""
+        onChange={(selected) => {
+          let roleId = parseInt(selected.value)
+          let newParentId = this.role.id
+          this.updateForm((f) => f.createRoleMove(roleId, newParentId))
+          this.queueSaveProposalPart(runMutation)
+        }}
+      />
+    </div>
   }
 
-  // You may move UP any child of the part target role,
-  // unless you've already moved that role in this proposal part.
-  moveRoleUpOpts() {
-    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
-    return this.role.children
-      .filter((r) => alreadyMovedRoleIds.indexOf(r.id) == -1)
-      .map((r) => ({label: r.name, value: r.id}))
+  renderMoveRoleUpDropdown({runMutation}) {
+    return <div className="col-sm-6">
+      Move a role <strong>up to</strong> "{this.props.proposal.circle.name}":
+      <Select
+        placeholder="Select a role..."
+        options={this.moveRoleUpOpts()}
+        selected=""
+        onChange={(selected) => {
+          let roleId = parseInt(selected.value)
+          let newParentId = this.props.proposal.circle.id
+          this.updateForm((f) => f.createRoleMove(roleId, newParentId))
+          this.queueSaveProposalPart(runMutation)
+        }}
+      />
+    </div>
   }
 
   renderMoveRolesSectionContent({runMutation}) {
-    let {canMoveStuffIn, canMoveStuffOut} = this.decideIfCanMoveStuff()
+    let {canMoveStuffDown, canMoveStuffUp} = this.decideIfCanMoveStuff()
+    console.log({canMoveStuffDown, canMoveStuffUp})
 
     return <div>
       <div className="row form-group">
-        <div className="col-sm-6">
-          Move a role <strong>down into</strong> "{this.role.name}":
-          <Select
-            placeholder="Select a role..."
-            options={this.moveRoleDownOpts()}
-            selected=""
-            onChange={(selected) => {
-              let roleId = parseInt(selected.value)
-              let newParentId = this.role.id
-              this.updateForm((f) => f.createRoleMove(roleId, newParentId))
-              this.queueSaveProposalPart(runMutation)
-            }}
-          />
-        </div>
-        <div className="col-sm-6">
-          Move a role <strong>up to</strong> "{this.props.proposal.circle.name}":
-          <Select
-            placeholder="Select a role..."
-            options={this.moveRoleUpOpts()}
-            selected=""
-            onChange={(selected) => {
-              let roleId = parseInt(selected.value)
-              let newParentId = this.props.proposal.circle.id
-              this.updateForm((f) => f.createRoleMove(roleId, newParentId))
-              this.queueSaveProposalPart(runMutation)
-            }}
-          />
-        </div>
+        {canMoveStuffDown ? this.renderMoveRoleDownDropdown({runMutation}) : ""}
+        {canMoveStuffUp   ? this.renderMoveRoleUpDropdown({runMutation})   : ""}
       </div>
+      {/* TODO: For better UI, the list of roles being moved should be divided into the in vs. out category and shown as part of that column, and hidden (reverted?) if that move-type is unavailable. */}
       <table className="table">
         <tbody>
           {this.getFormField("roleMoves").map((move) => {
@@ -368,6 +359,25 @@ class UpdateRolePart extends React.Component {
         </tbody>
       </table>
     </div>
+  }
+
+  // You may move DOWN any child of the proposal's circle, except the part target role,
+  // unless you've already moved that role in this proposal part.
+  moveRoleDownOpts() {
+    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
+    return this.props.proposal.circle.children
+      .filter((r) => r.id != this.role.id)
+      .filter((r) => alreadyMovedRoleIds.indexOf(+r.id) == -1)
+      .map((r) => ({label: r.name, value: r.id}))
+  }
+
+  // You may move UP any child of the part target role,
+  // unless you've already moved that role in this proposal part.
+  moveRoleUpOpts() {
+    let alreadyMovedRoleIds = this.getFormField("roleMoves").map((move) => +move.targetId)
+    return this.role.children
+      .filter((r) => alreadyMovedRoleIds.indexOf(r.id) == -1)
+      .map((r) => ({label: r.name, value: r.id}))
   }
 
   //
