@@ -54,7 +54,7 @@ class MoveRolesSection extends React.Component {
                   onClick={(e) => {
                     e.preventDefault()
                     this.props.updateForm((f) => f.deleteRoleMove(move.uuid))
-                    this.props.queueSaveProposalPart(this.props.runMutation)
+                    this.props.queueSaveProposalPart()
                   }}
                 >×</a>
               </td>
@@ -76,7 +76,7 @@ class MoveRolesSection extends React.Component {
           let roleId = parseInt(selected.value)
           let newParentId = this.props.partRole.id
           this.props.updateForm((f) => f.createRoleMove(roleId, newParentId))
-          this.props.queueSaveProposalPart(this.props.runMutation)
+          this.props.queueSaveProposalPart()
         }}
       />
     </div>
@@ -93,7 +93,7 @@ class MoveRolesSection extends React.Component {
           let roleId = parseInt(selected.value)
           let newParentId = this.props.proposalCircle.id
           this.props.updateForm((f) => f.createRoleMove(roleId, newParentId))
-          this.props.queueSaveProposalPart(this.props.runMutation)
+          this.props.queueSaveProposalPart()
         }}
       />
     </div>
@@ -128,7 +128,6 @@ MoveRolesSection.propTypes = {
   updateForm: PropTypes.func.isRequired,
   getFormField: PropTypes.func.isRequired,
   queueSaveProposalPart: PropTypes.func.isRequired,
-  runMutation: PropTypes.func.isRequired
 }
 
 const raise = (message) => console.error(message)

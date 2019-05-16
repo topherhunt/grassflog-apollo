@@ -3,32 +3,49 @@ import PropTypes from "prop-types"
 import {Mutation} from "react-apollo"
 import CreateRolePart from "./parts/create_role_part.jsx"
 import UpdateRolePart from "./parts/update_role_part.jsx"
-import {deletePartMutation, proposalQuery} from "../../apollo/queries"
+import {proposalQuery, updatePartMutation, deletePartMutation} from "../../apollo/queries"
 
 class ProposalPartContainer extends React.Component {
   render() {
+    return this.wrapInDeletePartMutation()
+  }
+
+  wrapInDeletePartMutation() {
     return <Mutation
       mutation={deletePartMutation}
-      update={this.updateCache.bind(this)}
+      update={this.updateCacheOnDelete.bind(this)}
     >
-      {(runMutation, {called, loading, data}) => (
+      {(runDeletePartMutation, {called, loading, data}) => (
         <div className="u-card u-box-shadow u-relative">
-          {this.renderPartContent(this.props.part.type)}
-          <div className="u-abs-top-right">
-            <a href="#" className="text-danger"
-              onClick={(e) => {
-                e.preventDefault()
-                runMutation({variables: {id: this.props.part.id}})
-              }}
-            >×</a>
-          </div>
+          {this.wrapInUpdatePartMutation()}
+          {this.renderDeletePartButton({runDeletePartMutation})}
         </div>
       )}
     </Mutation>
   }
 
-  renderPartContent(type) {
-    const passedProps = {...this.props}
+  renderDeletePartButton({runDeletePartMutation}) {
+    return <div className="u-abs-top-right">
+      <a href="#" className="text-danger"
+        onClick={(e) => {
+          e.preventDefault()
+          runDeletePartMutation({variables: {id: this.props.part.id}})
+        }}
+      >×</a>
+    </div>
+  }
+
+  wrapInUpdatePartMutation() {
+    return <Mutation mutation={updatePartMutation}>
+      {(runUpdatePartMutation, {called, loading, data}) =>
+        this.renderThisParticularPartType({runUpdatePartMutation})
+      }
+    </Mutation>
+  }
+
+  renderThisParticularPartType({runUpdatePartMutation}) {
+    let type = this.props.part.type
+    let passedProps = {...this.props, runUpdatePartMutation}
 
     if (type == "create_role") {
       return <div>CreateRolePart stub div (TODO)</div>
@@ -41,9 +58,9 @@ class ProposalPartContainer extends React.Component {
 
   // Tell Apollo how to update the cache to reflect this mutation
   // See https://www.apollographql.com/docs/react/essentials/mutations#update
-  updateCache(cache, resp) {
-    const proposalId = this.props.proposal.id
-    const deletedPartId = this.props.part.id // The record we need removed from the cache
+  updateCacheOnDelete(cache, resp) {
+    let proposalId = this.props.proposal.id
+    let deletedPartId = this.props.part.id // The record we need removed from the cache
 
     // Load the relevant data from the cache (we can ignore fields that won't change)
     let cachedData = cache.readQuery({

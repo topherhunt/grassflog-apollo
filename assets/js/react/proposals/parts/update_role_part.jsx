@@ -10,18 +10,14 @@ import MoveRolesSection from "./sections/move_roles_section.jsx"
 const raise = (message) => { console.error(message); abort() }
 const randomUuid = () => Math.random().toString(36).substring(7)
 
-// TODO: Once I've implemented UpdateRolePart, I should extract the common logic into a PartContentWrapper to house the global mutation stuff.
-
 class UpdateRolePart extends React.Component {
   constructor(props) {
     super(props)
 
-    // Look up the role that's the scope for this Part
-    const roleId = props.part.targetId || raise("targetId is required, but is blank!")
-    this.partRole = props.proposal.circle.children.find((r) => r.id == roleId) ||
-      raise("Can't find child role by id: "+roleId)
+    // The target role of this ProposalPart (ie. the main role being changed)
+    this.partRole = this.lookupPartRole(props)
 
-    // All roles potentially relevant to this Part, for easy name lookups
+    // All roles potentially relevant to this Part (for easy name lookups)
     this.allKnownRoles = [props.proposal.circle].concat(
       props.proposal.circle.children,
       this.partRole.children)
@@ -37,44 +33,42 @@ class UpdateRolePart extends React.Component {
     this.state = {origForm, currentForm}
 
     // Any of the event handlers below can trigger a debounced mutation by calling this.
-    this.queueSaveProposalPart = _.debounce((runMutation) => {
-      console.log("Running updatePartMutation.")
+    this.queueSaveProposalPart = _.debounce(() => {
+      let partId = this.props.part.id
       const {origForm, currentForm} = this.state
       const changeList = ConversionLogic.computeChanges(origForm, currentForm)
-      const changes_json = JSON.stringify(changeList.changes)
-      console.log("changes_json is: ", changes_json)
-      runMutation({variables: {id: this.props.part.id, changes_json: changes_json}})
+      const changesJson = JSON.stringify(changeList.changes)
+      console.log("Saving ProposalPart "+partId+" with changes: ", changesJson)
+      // Run the "Update ProposalPart" mutation func provided from ProposalPartContainer
+      this.props.runUpdatePartMutation({
+        variables: {id: this.props.part.id, changes_json: changesJson}
+      })
       // this.setState({updatePending: false})
     }, 500).bind(this)
   }
 
   render() {
-    console.log("currentForm is: ", this.state.currentForm)
-    const part = this.props.part
-    return <Mutation mutation={updatePartMutation}>
-      {(runMutation, {called, loading, data}) => (
-        <div>
-          <h4>Update role: {this.partRole.name}</h4>
-          <div className="small text-muted">
-            Part ID: {part.id},
-            type: {part.type},
-            targetId: {part.targetId}
-          </div>
+    // console.log("currentForm is: ", this.state.currentForm)
+    return <div>
+      <h4>Update role: {this.partRole.name}</h4>
+      <div className="small text-muted">
+        Part ID: {this.props.part.id},
+        type: {this.props.part.type},
+        targetId: {this.props.part.targetId}
+      </div>
 
-          {this.renderNameField({runMutation})}
-          {this.renderPurposeField({runMutation})}
-          {this.renderDomainsSection({runMutation})}
-          {this.renderAcctsSection({runMutation})}
-          <hr />
-          {this.renderExpandOrCollapseRoleSection({runMutation})}
-          {this.renderDeleteRoleSection({runMutation})}
-          {this.renderMoveRolesSection({runMutation})}
-        </div>
-      )}
-    </Mutation>
+      {this.renderNameField()}
+      {this.renderPurposeField()}
+      {this.renderDomainsSection()}
+      {this.renderAcctsSection()}
+      <hr />
+      {this.renderExpandOrCollapseRoleSection()}
+      {this.renderDeleteRoleSection()}
+      {this.renderMoveRolesSection()}
+    </div>
   }
 
-  renderNameField({runMutation}) {
+  renderNameField() {
     let role = this.partRole
     let name = this.getFormField("roleName")
     let origName = this.state.origForm.get("roleName")
@@ -88,12 +82,12 @@ class UpdateRolePart extends React.Component {
         onChange={(e) => {
           let name = e.target.value
           this.updateForm((f) => f.setRoleName(name))
-          this.queueSaveProposalPart(runMutation)
+          this.queueSaveProposalPart()
         }} />
     </div>
   }
 
-  renderPurposeField({runMutation}) {
+  renderPurposeField() {
     let role = this.partRole
     let purpose = this.getFormField("rolePurpose")
     let origPurpose = this.state.origForm.get("rolePurpose")
@@ -107,13 +101,13 @@ class UpdateRolePart extends React.Component {
         onChange={(e) => {
           let purpose = e.target.value
           this.updateForm((f) => f.setRolePurpose(purpose))
-          this.queueSaveProposalPart(runMutation)
+          this.queueSaveProposalPart()
         }} />
       <p>The latest purpose is: {purpose}</p>
     </div>
   }
 
-  renderDomainsSection({runMutation}) {
+  renderDomainsSection() {
     let domains = this.getFormField("domains")
     let focusOn = (this.state.focusOn == "last_domain"
       ? domains[domains.length-1].uuid
@@ -135,14 +129,14 @@ class UpdateRolePart extends React.Component {
             onChange={(e) => {
               let value = e.target.value
               this.updateForm((f) => f.updateDomain(domain.uuid, value))
-              this.queueSaveProposalPart(runMutation)
+              this.queueSaveProposalPart()
             }} />
           <div className="u-abs-top-right">
             <a href="#" className={domain.toDelete ? "" : "text-danger"}
               onClick={(e) => {
                 e.preventDefault()
                 this.updateForm((f) => f.deleteDomain(domain.uuid))
-                this.queueSaveProposalPart(runMutation)
+                this.queueSaveProposalPart()
               }}>
               <i className="icon">{domain.toDelete ? "delete_forever" : "delete"}</i>
             </a>
@@ -157,12 +151,12 @@ class UpdateRolePart extends React.Component {
         onClick={(e) => {
           this.updateForm((f) => f.createDomain())
           this.setState({focusOn: "last_domain"})
-          this.queueSaveProposalPart(runMutation)
+          this.queueSaveProposalPart()
         }} />
     </div>
   }
 
-  renderAcctsSection({runMutation}) {
+  renderAcctsSection() {
     let accts = this.getFormField("accts")
     let focusOn = (this.state.focusOn == "last_acct"
       ? accts[accts.length-1].uuid
@@ -184,14 +178,14 @@ class UpdateRolePart extends React.Component {
             onChange={(e) => {
               let value = e.target.value
               this.updateForm((f) => f.updateAcct(acct.uuid, value))
-              this.queueSaveProposalPart(runMutation)
+              this.queueSaveProposalPart()
             }} />
           <div className="u-abs-top-right">
             <a href="#" className={acct.toDelete ? "" : "text-danger"}
               onClick={(e) => {
                 e.preventDefault()
                 this.updateForm((f) => f.deleteAcct(acct.uuid))
-                this.queueSaveProposalPart(runMutation)
+                this.queueSaveProposalPart()
               }}>
               <i className="icon">{acct.toDelete ? "delete_forever" : "delete"}</i>
             </a>
@@ -206,12 +200,12 @@ class UpdateRolePart extends React.Component {
         onClick={(e) => {
           this.updateForm((f) => f.createAcct())
           this.setState({focusOn: "last_acct"})
-          this.queueSaveProposalPart(runMutation)
+          this.queueSaveProposalPart()
         }} />
     </div>
   }
 
-  renderExpandOrCollapseRoleSection({runMutation}) {
+  renderExpandOrCollapseRoleSection() {
     if (this.partRole.isCircle) {
       return <div>
         <label>
@@ -220,7 +214,7 @@ class UpdateRolePart extends React.Component {
             onChange={(e) => {
               let isChecked = e.target.checked
               this.updateForm((f) => f.setCollapseRole(isChecked))
-              this.queueSaveProposalPart(runMutation)
+              this.queueSaveProposalPart()
             }} />
           &nbsp; Collapse this circle
         </label>
@@ -233,7 +227,7 @@ class UpdateRolePart extends React.Component {
             onChange={(e) => {
               let isChecked = e.target.checked
               this.updateForm((f) => f.setExpandRole(isChecked))
-              this.queueSaveProposalPart(runMutation)
+              this.queueSaveProposalPart()
             }} />
           &nbsp; Expand this role into a circle
         </label>
@@ -241,7 +235,7 @@ class UpdateRolePart extends React.Component {
     }
   }
 
-  renderDeleteRoleSection({runMutation}) {
+  renderDeleteRoleSection() {
     return <div>
       <label>
         <input type="checkbox" value="1"
@@ -249,7 +243,7 @@ class UpdateRolePart extends React.Component {
           onChange={(e) => {
             let isChecked = e.target.checked
             this.updateForm((f) => f.setDeleteRole(isChecked))
-            this.queueSaveProposalPart(runMutation)
+            this.queueSaveProposalPart()
           }} />
         &nbsp; <span className="text-danger">Delete this role</span>
       </label>
@@ -257,7 +251,7 @@ class UpdateRolePart extends React.Component {
   }
 
   // TODO: Some of these props feel redundant. Maybe this is the wrong boundary?
-  renderMoveRolesSection({runMutation}) {
+  renderMoveRolesSection() {
     return <MoveRolesSection
       proposalCircle={this.props.proposal.circle}
       partRole={this.partRole}
@@ -265,8 +259,13 @@ class UpdateRolePart extends React.Component {
       updateForm={this.updateForm.bind(this)}
       getFormField={this.getFormField.bind(this)}
       queueSaveProposalPart={this.queueSaveProposalPart}
-      runMutation={runMutation}
     />
+  }
+
+  lookupPartRole(props) {
+    let roleId = props.part.targetId || raise("targetId is required, but is blank!")
+    return props.proposal.circle.children.find((r) => r.id == roleId) ||
+      raise("Can't find child role by id: "+roleId)
   }
 
   //
@@ -287,7 +286,8 @@ class UpdateRolePart extends React.Component {
 
 UpdateRolePart.propTypes = {
   proposal: PropTypes.object.isRequired,
-  part: PropTypes.object.isRequired
+  part: PropTypes.object.isRequired,
+  runUpdatePartMutation: PropTypes.func.isRequired
 }
 
 export default UpdateRolePart
