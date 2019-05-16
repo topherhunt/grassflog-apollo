@@ -6,6 +6,15 @@ import Select from "react-select"
 // Do that after I've proven out the basics with an UpdateRole part.
 
 class MoveRolesSection extends React.Component {
+  constructor(props) {
+    super(props)
+
+    // Memoize a list of roles potentially relevant to this Part (for easy name lookups)
+    this.allKnownRoles = [props.proposalCircle].concat(
+      props.proposalCircle.children,
+      props.partRole.children)
+  }
+
   render() {
     let {canMoveStuffDown, canMoveStuffUp} = this.decideIfCanMoveStuff()
     // TODO: We want to show the div if there are currently moveRole changes,
@@ -44,8 +53,8 @@ class MoveRolesSection extends React.Component {
       <table className="table">
         <tbody>
           {this.props.getFormField("roleMoves").map((move) => {
-            let targetRole = this.props.allKnownRoles.find((r) => +r.id == +move.targetId)
-            let parentRole = this.props.allKnownRoles.find((r) => +r.id == +move.parentId)
+            let targetRole = this.allKnownRoles.find((r) => +r.id == +move.targetId)
+            let parentRole = this.allKnownRoles.find((r) => +r.id == +move.parentId)
             let direction = (parentRole.id == this.props.partRole.id ? "into" : "up to")
             return <tr key={"move-"+move.targetId+"-"+move.parentId}>
               <td>Move "{targetRole.name}" {direction} "{parentRole.name}"</td>
@@ -124,7 +133,6 @@ class MoveRolesSection extends React.Component {
 MoveRolesSection.propTypes = {
   proposalCircle: PropTypes.object.isRequired,
   partRole: PropTypes.object.isRequired,
-  allKnownRoles: PropTypes.array.isRequired,
   updateForm: PropTypes.func.isRequired,
   getFormField: PropTypes.func.isRequired,
   queueSaveProposalPart: PropTypes.func.isRequired,

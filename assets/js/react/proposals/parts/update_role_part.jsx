@@ -17,11 +17,6 @@ class UpdateRolePart extends React.Component {
     // The target role of this ProposalPart (ie. the main role being changed)
     this.partRole = this.lookupPartRole(props)
 
-    // All roles potentially relevant to this Part (for easy name lookups)
-    this.allKnownRoles = [props.proposal.circle].concat(
-      props.proposal.circle.children,
-      this.partRole.children)
-
     // We track the state of this proposal builder section by using two form objects:
     // one to represent the "pristine" state of this ProposalPart and one to represent
     // the latest state given all of the user's proposed changes (within this part).
@@ -64,7 +59,14 @@ class UpdateRolePart extends React.Component {
       <hr />
       {this.renderExpandOrCollapseRoleSection()}
       {this.renderDeleteRoleSection()}
-      {this.renderMoveRolesSection()}
+
+      <MoveRolesSection
+        proposalCircle={this.props.proposal.circle}
+        partRole={this.partRole}
+        updateForm={this.updateForm.bind(this)}
+        getFormField={this.getFormField.bind(this)}
+        queueSaveProposalPart={this.queueSaveProposalPart}
+      />
     </div>
   }
 
@@ -248,18 +250,6 @@ class UpdateRolePart extends React.Component {
         &nbsp; <span className="text-danger">Delete this role</span>
       </label>
     </div>
-  }
-
-  // TODO: Some of these props feel redundant. Maybe this is the wrong boundary?
-  renderMoveRolesSection() {
-    return <MoveRolesSection
-      proposalCircle={this.props.proposal.circle}
-      partRole={this.partRole}
-      allKnownRoles={this.allKnownRoles}
-      updateForm={this.updateForm.bind(this)}
-      getFormField={this.getFormField.bind(this)}
-      queueSaveProposalPart={this.queueSaveProposalPart}
-    />
   }
 
   lookupPartRole(props) {
