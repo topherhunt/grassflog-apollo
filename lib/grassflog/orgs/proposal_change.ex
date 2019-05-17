@@ -155,7 +155,7 @@ defmodule Grassflog.Orgs.ProposalChange do
   defp validation_rules, do: [
     create_role: [
       target_id: :req_if_enacted,
-      params: [req: ~w(parent_id name), opt: ~w(purpose)],
+      params: [req: ~w(name), opt: ~w(purpose)],
       metadata: [req: ~w(target_name parent_name affects_records)]
     ],
     update_role: [

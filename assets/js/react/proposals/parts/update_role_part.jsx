@@ -1,9 +1,7 @@
 import React from "react"
 import PropTypes from "prop-types"
 import Select from "react-select"
-import {Mutation} from "react-apollo"
 import _ from "underscore"
-import {updatePartMutation} from "../../../apollo/queries"
 import {FormObject, ConversionLogic} from "./proposal_change_helpers"
 import EditRoleNameSection from "./sections/edit_role_name_section.jsx"
 import EditRolePurposeSection from "./sections/edit_role_purpose_section.jsx"
@@ -14,7 +12,6 @@ import DeleteRoleSection from "./sections/delete_role_section.jsx"
 import MoveRolesSection from "./sections/move_roles_section.jsx"
 
 const raise = (message) => { console.error(message); abort() }
-const randomUuid = () => Math.random().toString(36).substring(7)
 
 class UpdateRolePart extends React.Component {
   constructor(props) {
@@ -49,7 +46,6 @@ class UpdateRolePart extends React.Component {
       </div>
 
       <EditRoleNameSection
-        roleId={this.partRole.id}
         currentName={this.getFormField("roleName")}
         origName={this.state.origForm.get("roleName")}
         updateForm={this.updateForm.bind(this)}
@@ -57,7 +53,6 @@ class UpdateRolePart extends React.Component {
       />
 
       <EditRolePurposeSection
-        roleId={this.partRole.id}
         currentPurpose={this.getFormField("rolePurpose")}
         origPurpose={this.state.origForm.get("rolePurpose")}
         updateForm={this.updateForm.bind(this)}

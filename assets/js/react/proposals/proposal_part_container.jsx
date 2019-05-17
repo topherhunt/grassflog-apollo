@@ -48,7 +48,7 @@ class ProposalPartContainer extends React.Component {
     let passedProps = {...this.props, runUpdatePartMutation}
 
     if (type == "create_role") {
-      return <div>CreateRolePart stub div (TODO)</div>
+      return <CreateRolePart {...passedProps} />
     } else if (type == "update_role") {
       return <UpdateRolePart {...passedProps} />
     } else {

@@ -1,9 +1,10 @@
 import React from "react"
 import PropTypes from "prop-types"
+const randomUuid = () => Math.random().toString(36).substring(7)
 
 class EditRolePurposeSection extends React.Component {
   render() {
-    let label = "role_"+this.props.roleId+"_name"
+    let label = "role_name_"+randomUuid()
     let toUpdate = (this.props.currentPurpose != this.props.origPurpose)
     return <div className="form-group">
       <label htmlFor={label}>Purpose</label>
@@ -21,7 +22,6 @@ class EditRolePurposeSection extends React.Component {
 }
 
 EditRolePurposeSection.propTypes = {
-  roleId: PropTypes.string.isRequired,
   currentPurpose: PropTypes.string.isRequired,
   origPurpose: PropTypes.string.isRequired,
   updateForm: PropTypes.func.isRequired,

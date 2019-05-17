@@ -25,7 +25,20 @@ class FormObject {
   // Set up this formObject to represent the initial state of this proposal part
   // (prior to reflecting any changes contained in the part)
   setInitialData(partType, partTarget) {
-    if (partType == "update_role") {
+    if (partType == "create_role") {
+      this.data = {
+        type: "create_role",
+        targetId: null,
+        roleName: "New role",
+        rolePurpose: "",
+        expandRole: false,
+        collapseRole: false,
+        deleteRole: false,
+        roleMoves: [],
+        domains: [],
+        accts:   []
+      }
+    } else if (partType == "update_role") {
       const role = partTarget
       this.data = {
         type: "update_role",
@@ -196,7 +209,11 @@ const ConversionLogic = {
     // Graphql provides the params field as a string; we need to manually decode it.
     const params = JSON.parse(change.params)
 
-    if (type == "update_role") {
+    if (type == "create_role") {
+      form.setRoleName(params.name)
+      if (params.purpose) { form.setRolePurpose(params.purpose) }
+    }
+    else if (type == "update_role") {
       if (params.name) { form.setRoleName(params.name) }
       if (params.purpose) { form.setRolePurpose(params.purpose) }
     }
@@ -255,10 +272,11 @@ const ConversionLogic = {
     let rolePurpose1 = form1.get("rolePurpose")
     let rolePurpose2 = form2.get("rolePurpose")
     if (roleName1 != roleName2 || rolePurpose1 != rolePurpose2) {
+      let type = form2.get("type") // create_role or update_role
       let params = {}
       if (roleName1 != roleName2) { params.name = roleName2 }
       if (rolePurpose1 != rolePurpose2) { params.purpose = rolePurpose2 }
-      changeList.add({type: "update_role", targetId: roleId, params: params})
+      changeList.add({type: type, targetId: roleId, params: params})
     }
 
     // Is the role being expanded?
