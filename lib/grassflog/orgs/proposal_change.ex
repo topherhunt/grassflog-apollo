@@ -9,7 +9,6 @@ defmodule Grassflog.Orgs.ProposalChange do
   schema "proposal_changes" do
     belongs_to :proposal_part, Orgs.ProposalPart
     field :type, :string
-    field :target_id, :integer
     # Any params required to execute this change
     # (referencing only target_id, but not the Part target or Proposal circle)
     field :params, :map
@@ -148,69 +147,69 @@ defmodule Grassflog.Orgs.ProposalChange do
     validation_rules()[String.to_atom(type)][field]
   end
 
+  ##
   # Rules for validating the SHAPE of a changeset (not validating referenced keys etc.)
-  # - unmentioned keys are invalid
-  # - metadata fields are irrelevant if draft; required (as specified) once enacted
+  # * unmentioned keys are invalid
+  # * metadata fields are irrelevant if draft; required (as specified) once enacted
+  # * medadata contains fields needed to a) describe a change after-the-fact without
+  #   referencing current records, or b) locate all changes affecting an object.
+  # * "target" refers to the object of this change (e.g. the domain being updated).
+  #
   # TODO: Try making this an @ attr?
+  # TODO: Metadata fields are WIP for now. Once I implement displaying role structure
+  # history, I'll have a chance to fine-tune what metadata to require for each type.
+  #
   defp validation_rules, do: [
     create_role: [
-      target_id: :req_if_enacted,
       params: [req: ~w(name), opt: ~w(purpose)],
-      metadata: [req: ~w(target_name parent_name affects_records)]
+      metadata: [req: ~w(target_id target_name parent_name affects_records)]
     ],
     update_role: [
-      target_id: :req,
       params: [opt: ~w(name purpose)],
-      metadata: [req: ~w(target_name affects_records), opt: ~w(old_name old_purpose)]
+      metadata: [
+        req: ~w(target_id target_name affects_records),
+        opt: ~w(old_name old_purpose)
+      ]
     ],
     expand_role: [
-      target_id: :req,
       params: [],
-      metadata: [req: ~w(target_name affects_records)]
+      metadata: [req: ~w(target_id target_name affects_records)]
     ],
     move_role: [
-      target_id: :req,
-      params: [req: ~w(parent_id)],
+      params: [req: ~w(target_id parent_id)],
       metadata: [req: ~w(target_name old_parent_name new_parent_name affects_records)]
     ],
     collapse_role: [
-      target_id: :req,
       params: [],
-      metadata: [req: ~w(target_name affects_records)]
+      metadata: [req: ~w(target_id target_name affects_records)]
     ],
     delete_role: [
-      target_id: :req,
       params: [],
-      metadata: [req: ~w(target_name affects_records)]
+      metadata: [req: ~w(target_id target_name affects_records)]
     ],
     create_domain: [
-      target_id: :req_if_enacted,
       params: [req: ~w(role_id name)],
-      metadata: [req: ~w(target_name role_name affects_records)]
+      metadata: [req: ~w(target_id role_name affects_records)]
     ],
     update_domain: [
       target_id: :req,
-      params: [req: ~w(name)],
-      metadata: [req: ~w(target_name role_name old_name affects_records)]
+      params: [req: ~w(target_id name)],
+      metadata: [req: ~w(old_name role_name affects_records)]
     ],
     delete_domain: [
-      target_id: :req,
-      params: [],
+      params: [req: ~w(target_id)],
       metadata: [req: ~w(target_name role_name affects_records)]
     ],
     create_acct: [
-      target_id: :req_if_enacted,
       params: [req: ~w(role_id name)],
-      metadata: [req: ~w(target_name role_name affects_records)]
+      metadata: [req: ~w(target_id role_name affects_records)]
     ],
     update_acct: [
-      target_id: :req,
-      params: [req: ~w(name)],
-      metadata: [req: ~w(target_name role_name old_name affects_records)]
+      params: [req: ~w(target_id name)],
+      metadata: [req: ~w(old_name role_name affects_records)]
     ],
     delete_acct: [
-      target_id: :req,
-      params: [],
+      params: [req: ~w(target_id)],
       metadata: [req: ~w(target_name role_name affects_records)]
     ]
   ]
