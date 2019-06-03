@@ -54,7 +54,6 @@ defmodule GrassflogWeb.Graphql.Types do
   object :proposal_change do
     field :id, :id
     field :type, :string
-    field :target_id, :integer
     field :params, :json
   end
 

@@ -227,18 +227,18 @@ const ConversionLogic = {
       form.setDeleteRole(true)
     }
     else if (type == "move_role") {
-      form.createRoleMove(change.targetId, params.parent_id)
+      form.createRoleMove(params.target_id, params.parent_id)
     }
     else if (type == "create_domain") {
       let domain = form.createDomain()
       form.updateDomain(domain.uuid, params.name)
     }
     else if (type == "update_domain") {
-      let domain = form.getDomainById(change.targetId)
+      let domain = form.getDomainById(params.target_id)
       form.updateDomain(domain.uuid, params.name)
     }
     else if (type == "delete_domain") {
-      let domain = form.getDomainById(change.targetId)
+      let domain = form.getDomainById(params.target_id)
       form.deleteDomain(domain.uuid)
     }
     else if (type == "create_acct") {
@@ -246,11 +246,11 @@ const ConversionLogic = {
       form.updateAcct(acct.uuid, params.name)
     }
     else if (type == "update_acct") {
-      let acct = form.getAcctById(change.targetId)
+      let acct = form.getAcctById(params.target_id)
       form.updateAcct(acct.uuid, params.name)
     }
     else if (type == "delete_acct") {
-      let acct = form.getAcctById(change.targetId)
+      let acct = form.getAcctById(params.target_id)
       form.deleteAcct(acct.uuid)
     }
     else {
@@ -276,30 +276,39 @@ const ConversionLogic = {
       let params = {}
       if (roleName1 != roleName2) { params.name = roleName2 }
       if (rolePurpose1 != rolePurpose2) { params.purpose = rolePurpose2 }
-      changeList.add({type: type, targetId: roleId, params: params})
+      if (type == "update_role") { params.targetId = roleId }
+      changeList.add({type: type, params: params})
     }
 
     // Is the role being expanded?
     if (form2.get("expandRole")) {
-      changeList.add({type: "expand_role", targetId: roleId})
+      changeList.add({
+        type: "expand_role",
+        params: {targetId: roleId}
+      })
     }
 
     // Is the role being collapsed?
     if (form2.get("collapseRole")) {
-      changeList.add({type: "collapse_role", targetId: roleId})
+      changeList.add({
+        type: "collapse_role",
+        params: {targetId: roleId}
+      })
     }
 
     // Is the role being deleted?
     if (form2.get("deleteRole")) {
-      changeList.add({type: "delete_role", targetId: roleId})
+      changeList.add({
+        type: "delete_role",
+        params: {targetId: roleId}
+      })
     }
 
     // Are roles being moved in or out?
     form2.get("roleMoves").map(function(move) {
       changeList.add({
         type: "move_role",
-        targetId: move.targetId,
-        params: {parentId: move.parentId}
+        params: {targetId: move.targetId, parentId: move.parentId}
       })
     })
 
@@ -317,15 +326,17 @@ const ConversionLogic = {
       if (domain.toCreate) { return } // Skip update if newly created
       changeList.add({
         type: "update_domain",
-        targetId: domain.targetId,
-        params: {name: domain.name}
+        params: {targetId: domain.targetId, name: domain.name}
       })
     })
 
     // Are domains deleted?
     form2.get("domains").filter((i) => !!i.toDelete).map(function(domain) {
       if (domain.toCreate) { return } // Skip delete if newly created
-      changeList.add({type: "delete_domain", targetId: domain.targetId})
+      changeList.add({
+        type: "delete_domain",
+        params: {targetId: domain.targetId}
+      })
     })
 
     // Are new accts added?
@@ -342,15 +353,17 @@ const ConversionLogic = {
       if (acct.toCreate) { return } // Skip update if newly created
       changeList.add({
         type: "update_acct",
-        targetId: acct.targetId,
-        params: {name: acct.name}
+        params: {targetId: acct.targetId, name: acct.name}
       })
     })
 
     // Are accts deleted?
     form2.get("accts").filter((i) => !!i.toDelete).map(function(acct) {
       if (acct.toCreate) { return } // Skip delete if newly created
-      changeList.add({type: "delete_acct", targetId: acct.targetId})
+      changeList.add({
+        type: "delete_acct",
+        params: {targetId: acct.targetId}
+      })
     })
 
     console.log("TODO: Run changes on form1 & confirm that we end up same as form2.")

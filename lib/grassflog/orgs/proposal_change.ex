@@ -54,11 +54,10 @@ defmodule Grassflog.Orgs.ProposalChange do
 
   def draft_changeset(struct, params) do
     struct
-    |> cast(params, [:proposal_part_id, :type, :target_id, :params, :metadata, :enacted_at])
+    |> cast(params, [:proposal_part_id, :type, :params, :metadata, :enacted_at])
     |> validate_required([:proposal_part_id, :type])
     |> validate_inclusion(:type, @valid_types)
     |> populate_params_if_nil()
-    |> maybe_require_target_id()
     |> validate_no_disallowed_params()
     |> validate_no_missing_params()
   end
@@ -92,18 +91,6 @@ defmodule Grassflog.Orgs.ProposalChange do
       changeset
     else
       put_change(changeset, :params, %{})
-    end
-  end
-
-  defp maybe_require_target_id(changeset) do
-    type = get_field(changeset, :type)
-    target_id = get_field(changeset, :target_id)
-    is_required = validation_rules()[String.to_atom(type)][:target_id] == :req
-
-    if is_required && target_id == nil do
-      add_error(changeset, :target_id, "is required for change type #{type}")
-    else
-      changeset
     end
   end
 
@@ -162,30 +149,27 @@ defmodule Grassflog.Orgs.ProposalChange do
   defp validation_rules, do: [
     create_role: [
       params: [req: ~w(name), opt: ~w(purpose)],
-      metadata: [req: ~w(target_id target_name parent_name affects_records)]
+      metadata: [req: ~w(target_id parent_name affects_records)]
     ],
     update_role: [
-      params: [opt: ~w(name purpose)],
-      metadata: [
-        req: ~w(target_id target_name affects_records),
-        opt: ~w(old_name old_purpose)
-      ]
+      params: [req: ~w(target_id), opt: ~w(name purpose)],
+      metadata: [req: ~w(old_name affects_records), opt: ~w(old_purpose)]
     ],
     expand_role: [
-      params: [],
-      metadata: [req: ~w(target_id target_name affects_records)]
+      params: [req: ~w(target_id)],
+      metadata: [req: ~w(target_name affects_records)]
     ],
     move_role: [
       params: [req: ~w(target_id parent_id)],
       metadata: [req: ~w(target_name old_parent_name new_parent_name affects_records)]
     ],
     collapse_role: [
-      params: [],
-      metadata: [req: ~w(target_id target_name affects_records)]
+      params: [req: ~w(target_id)],
+      metadata: [req: ~w(target_name affects_records)]
     ],
     delete_role: [
-      params: [],
-      metadata: [req: ~w(target_id target_name affects_records)]
+      params: [req: ~w(target_id)],
+      metadata: [req: ~w(target_name affects_records)]
     ],
     create_domain: [
       params: [req: ~w(role_id name)],

@@ -17,6 +17,8 @@ class CreateRolePart extends React.Component {
   constructor(props) {
     super(props)
 
+    // TODO: De-duplicate the form init stuff if possible (see UpdateRolePart constructor)
+
     // We track the state of this proposal builder section by using two form objects:
     // one to represent the "pristine" state of this ProposalPart and one to represent
     // the latest state given all of the user's proposed changes (within this part).
@@ -25,6 +27,7 @@ class CreateRolePart extends React.Component {
     let origForm = new FormObject
     origForm.setInitialData("create_role")
     let currentForm = ConversionLogic.applyChanges(origForm, props.part.changes)
+    console.log("currentForm:", currentForm)
     this.state = {origForm, currentForm}
 
     // Any of the event handlers below can trigger a debounced mutation by calling this.

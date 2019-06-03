@@ -42,7 +42,6 @@ const proposalQuery = gql`
         changes {
           id
           type
-          targetId
           params
         }
       }
@@ -68,7 +67,6 @@ const createPartMutation = gql`
       changes {
         id
         type
-        targetId
         params
       }
     }
@@ -84,7 +82,6 @@ const updatePartMutation = gql`
       changes {
         id
         type
-        targetId
         params
       }
     }

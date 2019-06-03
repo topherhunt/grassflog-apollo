@@ -2,6 +2,8 @@ import React from "react"
 import PropTypes from "prop-types"
 import Select from "react-select"
 
+const raise = (message) => { console.error(message); abort() }
+
 class MoveRolesSection extends React.Component {
   constructor(props) {
     super(props)
@@ -50,11 +52,17 @@ class MoveRolesSection extends React.Component {
       <table className="table">
         <tbody>
           {this.props.getFormField("roleMoves").map((move) => {
-            let targetRole = this.allKnownRoles.find((r) => +r.id == +move.targetId)
-            let parentRole = this.allKnownRoles.find((r) => +r.id == +move.parentId)
-            let direction = (parentRole.id == this.props.partRole.id ? "into" : "up to")
+            let targetName = this.allKnownRoles.find((r) => +r.id == +move.targetId).name
+            let direction = (parentId == this.props.proposalCircle.id ? "up to" : "into")
+            let parentId = move.parentId
+            let parentName = (
+              parentId == "__PART_TARGET_ID__"
+                ? this.props.getFormField("roleName")
+                : this.allKnownRoles.find((r) => +r.id == +move.parentId).name
+            )
+
             return <tr key={"move-"+move.targetId+"-"+move.parentId}>
-              <td>Move "{targetRole.name}" {direction} "{parentRole.name}"</td>
+              <td>Move "{targetName}" {direction} "{parentName}"</td>
               <td>
                 <a href="#" className="text-danger"
                   onClick={(e) => {
@@ -73,7 +81,7 @@ class MoveRolesSection extends React.Component {
 
   renderMoveRoleDownDropdown() {
     return <div className="col-sm-6">
-      Move a role <strong>down into</strong> "{this.props.partRole.name}":
+      Move a role <strong>down into</strong> "{this.props.getFormField("roleName")}":
       <Select
         placeholder="Select a role..."
         options={this.moveRoleDownOpts()}
@@ -90,7 +98,7 @@ class MoveRolesSection extends React.Component {
 
   renderMoveRoleUpDropdown() {
     return <div className="col-sm-6">
-      Move a role <strong>up to</strong> "{this.props.proposalCircle.name}":
+      Move a role <strong>up to</strong> "{this.props.getFormField("roleName")}":
       <Select
         placeholder="Select a role..."
         options={this.moveRoleUpOpts()}
@@ -119,6 +127,7 @@ class MoveRolesSection extends React.Component {
   // unless you've already moved that role in this proposal part.
   moveRoleUpOpts() {
     let alreadyMovedRoleIds = this.props.getFormField("roleMoves").map((m) => +m.targetId)
+    // (children will naturally be empty for a newly-created role)
     return this.props.partRole.children
       .filter((r) => alreadyMovedRoleIds.indexOf(+r.id) == -1)
       .map((r) => ({label: r.name, value: r.id}))
