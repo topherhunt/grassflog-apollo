@@ -6,9 +6,7 @@ defmodule GrassflogWeb.RequestLogger do
 
   @behaviour Plug
 
-  def init(opts) do
-    %{log_level: opts[:log_level] || :info}
-  end
+  def init(opts), do: opts
 
   def call(conn, opts) do
     start_time = System.monotonic_time()
@@ -17,15 +15,14 @@ defmodule GrassflogWeb.RequestLogger do
       # Uses a func so the string doesn't need to be computed unless log_level is active.
       # Charlist would be more performant, but I'm not pro enough to worry about that.
       # Other data I could include, but feels redundant: remote_ip, port, owner (PID).
-      Logger.log(
-        opts.log_level,
-        fn ->
-          "■ [#{conn.method} #{conn.request_path}] "<>
-          "params=#{inspect(Phoenix.Logger.filter_values(conn.params))} "<>
-          "user=#{print_user(conn)} "<>
-          "status=#{conn.status}#{print_redirect(conn)} "<>
-          "duration=#{print_time_taken(start_time)}"
-        end)
+      Logger.log(:info, fn ->
+        "■ [#{conn.method} #{conn.request_path}] "<>
+        "params=#{inspect(Phoenix.Logger.filter_values(conn.params))} "<>
+        "user=#{print_user(conn)} "<>
+        "status=#{conn.status}#{print_redirect(conn)} "<>
+        "duration=#{print_time_taken(start_time)}"
+      end)
+
       conn
     end)
   end
