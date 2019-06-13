@@ -21,7 +21,9 @@ config :grassflog,
 config :grassflog, Grassflog.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: H.env!("DATABASE_URL"),
-  pool_size: 10 # Heroku PG hobby-dev allows max 20 db connections, so 10 is safe
+  # Heroku PG hobby-dev allows max 20 db connections, so 10 is safe
+  pool_size: 10,
+  log: false
 
 # Configures the endpoint
 config :grassflog, GrassflogWeb.Endpoint,

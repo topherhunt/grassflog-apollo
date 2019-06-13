@@ -19,7 +19,7 @@ defmodule GrassflogWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: GrassflogWeb, log: :info
+      use Phoenix.Controller, namespace: GrassflogWeb, log: false
 
       import Plug.Conn
       import GrassflogWeb.Gettext

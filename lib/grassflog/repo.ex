@@ -1,9 +1,9 @@
 defmodule Grassflog.Repo do
-  import Ecto.Query, warn: false
-  alias Grassflog.Repo
   use Ecto.Repo,
     otp_app: :grassflog,
     adapter: Ecto.Adapters.Postgres
+  import Ecto.Query, warn: false
+  alias Grassflog.Repo
 
   def count(query), do: query |> select([t], count(t.id)) |> Repo.one()
 

@@ -24,7 +24,9 @@ defmodule GrassflogWeb.Endpoint do
   end
 
   plug Plug.RequestId
-  plug Plug.Logger
+
+  # Custom one-line request logging
+  plug GrassflogWeb.RequestLogger
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
