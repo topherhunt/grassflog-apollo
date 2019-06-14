@@ -5,12 +5,12 @@ defmodule Grassflog.Telemetry do
   def handle_event([:grassflog, :repo, :query], measurements, metadata, _config) do
     Logger.log(:debug, fn ->
       {ok, _} = metadata.result
-      source = metadata.source || "?"
-      query_time = div(measurements.query_time, 100) / 10
+      source = inspect(metadata.source)
+      time = div(measurements.query_time, 100_000) / 10
       query = Regex.replace(~r/(\d\.)"([^"]+)"/, metadata.query, "\\1\\2")
-      params = metadata.params
+      params = inspect(metadata.params, charlists: false)
 
-      "SQL query: #{ok} source=\"#{source}\" db=#{query_time}ms   #{query}   params=#{inspect(params)}"
+      "SQL query: #{ok} source=#{source} db=#{time}ms   #{query}   params=#{params}"
     end)
   end
 end
