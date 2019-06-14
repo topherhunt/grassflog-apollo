@@ -1,5 +1,6 @@
 defmodule GrassflogWeb.Graphql.Resolvers do
   alias Grassflog.Orgs
+  import Absinthe.Resolution.Helpers, only: [batch: 3]
 
   #
   # Users
@@ -21,24 +22,63 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     {:ok, Orgs.get_role(parent.circle_id)}
   end
 
+  # Unbatched
   def list_roles(%Orgs.Role{} = parent, _args, _resolution) do
     {:ok, Orgs.get_roles(parent: parent)}
+  end
+
+  # See https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#module-example-usage
+  def batch_list_roles(%Orgs.Role{} = parent, _args, _resolution) do
+    batch({__MODULE__, :load_roles_by_parent_id}, parent.id, fn(batch_results) ->
+      {:ok, Map.get(batch_results, parent.id)}
+    end)
+  end
+
+  def load_roles_by_parent_id(_, parent_ids) do
+    roles = Orgs.get_roles(parent_ids: parent_ids)
+    Enum.group_by(roles, & &1.parent_id)
   end
 
   #
   # Domains
   #
 
+  # Unbatched
   def list_domains(%Orgs.Role{} = parent, _args, _resolution) do
     {:ok, Orgs.get_domains(role: parent)}
+  end
+
+  # See https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#module-example-usage
+  def batch_list_domains(%Orgs.Role{} = parent, _args, _resolution) do
+    batch({__MODULE__, :load_domains_by_role_id}, parent.id, fn(batch_results) ->
+      {:ok, Map.get(batch_results, parent.id)}
+    end)
+  end
+
+  def load_domains_by_role_id(_, role_ids) do
+    domains = Orgs.get_domains(role_ids: role_ids)
+    Enum.group_by(domains, & &1.role_id)
   end
 
   #
   # Accountabilities
   #
 
+  # Unbatched
   def list_accts(%Orgs.Role{} = parent, _args, _resolution) do
     {:ok, Orgs.get_accts(role: parent)}
+  end
+
+  # See https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#module-example-usage
+  def batch_list_accts(%Orgs.Role{} = parent, _args, _resolution) do
+    batch({__MODULE__, :load_accts_by_role_id}, parent.id, fn(batch_results) ->
+      {:ok, Map.get(batch_results, parent.id)}
+    end)
+  end
+
+  def load_accts_by_role_id(_, role_ids) do
+    accts = Orgs.get_accts(role_ids: role_ids)
+    Enum.group_by(accts, & &1.role_id)
   end
 
   #

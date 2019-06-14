@@ -26,5 +26,6 @@ defmodule Grassflog.Orgs.Domain do
 
   def filter(query, :id, id), do: where(query, [d], d.id == ^id)
   def filter(query, :role, role), do: where(query, [d], d.role_id == ^role.id)
+  def filter(query, :role_ids, role_ids), do: where(query, [d], d.role_id in ^role_ids)
   def filter(query, :order, :id), do: order_by(query, [d], asc: d.id)
 end

@@ -26,5 +26,6 @@ defmodule Grassflog.Orgs.Accountability do
 
   def filter(query, :id, id), do: where(query, [a], a.id == ^id)
   def filter(query, :role, role), do: where(query, [a], a.role_id == ^role.id)
+  def filter(query, :role_ids, role_ids), do: where(query, [a], a.role_id in ^role_ids)
   def filter(query, :order, :id), do: order_by(query, [a], asc: a.id)
 end

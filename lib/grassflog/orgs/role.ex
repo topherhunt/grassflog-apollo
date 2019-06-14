@@ -48,6 +48,7 @@ defmodule Grassflog.Orgs.Role do
   def filter(query, :id, id), do: where(query, [r], r.id == ^id)
   def filter(query, :org, org), do: where(query, [r], r.org_id == ^org.id)
   def filter(query, :parent, parent), do: where(query, [r], r.parent_id == ^parent.id)
+  def filter(query, :parent_ids, par_ids), do: where(query, [r], r.parent_id in ^par_ids)
   def filter(query, :preload, preloads), do: preload(query, ^preloads)
   def filter(query, :order, :id), do: order_by(query, [r], asc: r.id)
 end

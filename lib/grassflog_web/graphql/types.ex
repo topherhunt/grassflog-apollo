@@ -16,9 +16,9 @@ defmodule GrassflogWeb.Graphql.Types do
     field :name, :string
     field :purpose, :string
     field :is_circle, :boolean
-    field :children, list_of(:role), do: resolve &Resolvers.list_roles/3
-    field :domains, list_of(:domain), do: resolve &Resolvers.list_domains/3
-    field :accts, list_of(:acct), do: resolve &Resolvers.list_accts/3
+    field :children, list_of(:role), do: resolve &Resolvers.batch_list_roles/3
+    field :domains, list_of(:domain), do: resolve &Resolvers.batch_list_domains/3
+    field :accts, list_of(:acct), do: resolve &Resolvers.batch_list_accts/3
   end
 
   object :domain do
