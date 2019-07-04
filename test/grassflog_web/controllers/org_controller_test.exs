@@ -11,7 +11,7 @@ defmodule GrassflogWeb.Manage.OrgControllerTest do
   end
 
   describe "#index" do
-    test "lists all orgs I'm a member", %{conn: conn} do
+    test "lists all orgs I'm a member of", %{conn: conn} do
       {conn, user} = login_as_new_user(conn)
       org1 = Factory.insert_org()
       org2 = Factory.insert_org()

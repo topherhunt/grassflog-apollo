@@ -40,5 +40,10 @@ module.exports = (env, options) => ({
   plugins: [
     new MiniCssExtractPlugin({ filename: '../css/app.css' }),
     new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
-  ]
+  ],
+  // Make sure webpack checks here when looking for modules required by another module
+  // (react-phoenix was giving errors until I added this)
+  resolve: {
+    modules: [path.join(__dirname, "node_modules")]
+  }
 });

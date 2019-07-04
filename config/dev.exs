@@ -17,6 +17,8 @@ config :grassflog, GrassflogWeb.Endpoint,
       "--mode",
       "development",
       "--watch-stdin",
+      "--color",
+      "--display-error-details",
       cd: Path.expand("../assets", __DIR__)
     ]
   ]

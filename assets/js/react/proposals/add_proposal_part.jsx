@@ -8,8 +8,9 @@ class AddProposalPart extends React.Component {
   render() {
     return <Mutation
       mutation={createPartMutation}
-      update={this.updateCache.bind(this)}>
-      {(runMutation, {called, loading, data}) => (
+      update={this.updateCacheOnCreatePart.bind(this)}
+    >
+      {(runCreatePartMutation, {called, loading, data}) => (
         <div className="u-card u-box-shadow">
           <h3>Change something</h3>
           <p>Just as a reminder, the tension is: <em>{this.props.proposal.tension}</em></p>
@@ -20,7 +21,7 @@ class AddProposalPart extends React.Component {
                 options={this.roleOptions()}
                 onChange={(selected) => {
                   const roleId = parseInt(selected.value)
-                  runMutation({variables: {
+                  runCreatePartMutation({variables: {
                     proposalId: this.props.proposal.id,
                     type: "update_role",
                     targetId: roleId
@@ -33,7 +34,7 @@ class AddProposalPart extends React.Component {
                 className="btn btn-outline-primary"
                 onClick={(e) => {
                   e.preventDefault()
-                  runMutation({variables: {
+                  runCreatePartMutation({variables: {
                     proposalId: this.props.proposal.id,
                     type: "create_role"
                   }})
@@ -52,7 +53,7 @@ class AddProposalPart extends React.Component {
 
   // Tell Apollo how to update the cache to reflect this mutation
   // See https://www.apollographql.com/docs/react/essentials/mutations#update
-  updateCache(cache, resp) {
+  updateCacheOnCreatePart(cache, resp) {
     const proposalId = this.props.proposal.id
     const newPart = resp.data.create_proposal_part // The new record we need to cache
 

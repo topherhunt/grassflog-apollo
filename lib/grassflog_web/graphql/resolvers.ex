@@ -1,6 +1,6 @@
 defmodule GrassflogWeb.Graphql.Resolvers do
-  alias Grassflog.Orgs
   import Absinthe.Resolution.Helpers, only: [batch: 3]
+  alias Grassflog.Orgs
 
   #
   # Users
@@ -28,6 +28,7 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   end
 
   # See https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#module-example-usage
+  # If this gets too verbose, also try https://hexdocs.pm/absinthe/ecto.html#dataloader
   def batch_list_roles(%Orgs.Role{} = parent, _args, _resolution) do
     batch({__MODULE__, :load_roles_by_parent_id}, parent.id, fn(batch_results) ->
       {:ok, Map.get(batch_results, parent.id)}
@@ -49,6 +50,7 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   end
 
   # See https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#module-example-usage
+  # If this gets too verbose, also try https://hexdocs.pm/absinthe/ecto.html#dataloader
   def batch_list_domains(%Orgs.Role{} = parent, _args, _resolution) do
     batch({__MODULE__, :load_domains_by_role_id}, parent.id, fn(batch_results) ->
       {:ok, Map.get(batch_results, parent.id)}
@@ -70,6 +72,7 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   end
 
   # See https://hexdocs.pm/absinthe/Absinthe.Middleware.Batch.html#module-example-usage
+  # If this gets too verbose, also try https://hexdocs.pm/absinthe/ecto.html#dataloader
   def batch_list_accts(%Orgs.Role{} = parent, _args, _resolution) do
     batch({__MODULE__, :load_accts_by_role_id}, parent.id, fn(batch_results) ->
       {:ok, Map.get(batch_results, parent.id)}
@@ -94,12 +97,12 @@ defmodule GrassflogWeb.Graphql.Resolvers do
     end
   end
 
-  def update_proposal(_parent, params, resolution) do
+  def update_proposal(_parent, args, resolution) do
     # Auth context: see https://hexdocs.pm/absinthe/mutations.html#authorization
     current_user = resolution.context.current_user
     # verify ownership
-    proposal = Orgs.Proposal.get!(params.id, proposer: current_user)
-    proposal = Orgs.Proposal.update!(proposal, %{tension: params.tension})
+    proposal = Orgs.Proposal.get!(args.id, proposer: current_user)
+    proposal = Orgs.Proposal.update!(proposal, %{tension: args.tension})
     {:ok, proposal}
   end
 
@@ -148,9 +151,9 @@ defmodule GrassflogWeb.Graphql.Resolvers do
 
   defp underscore_keys_recursively(other), do: other
 
-  def delete_proposal_part(_parent, params, resolution) do
+  def delete_proposal_part(_parent, %{id: id}, resolution) do
     current_user = resolution.context.current_user
-    part = Orgs.ProposalPart.get!(params.id)
+    part = Orgs.ProposalPart.get!(id)
     # verify ownership
     Orgs.Proposal.get!(part.proposal_id, proposer: current_user)
     Orgs.ProposalPart.delete!(part)
@@ -164,31 +167,4 @@ defmodule GrassflogWeb.Graphql.Resolvers do
   def list_proposal_changes(%Orgs.ProposalPart{} = parent, _args, _resolution) do
     {:ok, Orgs.ProposalChange.all(part: parent)}
   end
-
-  # def create_proposal_change(_parent, params, resolution) do
-  #   current_user = resolution.context.current_user
-  #   part = Orgs.ProposalPart.get!(params.proposal_part_id)
-  #   # verify ownership
-  #   Orgs.Proposal.get!(part.proposal_id, proposer: current_user)
-  #   change = Orgs.ProposalChange.insert!(params)
-  #   {:ok, change}
-  # end
-
-  # def update_proposal_change(_parent, params, resolution) do
-  #   current_user = resolution.context.current_user
-  #   change = Orgs.ProposalChange.get!(params.id, preload: :part)
-  #   # verify ownership
-  #   Orgs.Proposal.get!(change.part.proposal_id, proposer: current_user)
-  #   change = Orgs.ProposalChange.update!(params)
-  #   {:ok, change}
-  # end
-
-  # def delete_proposal_change(_parent, params, resolution) do
-  #   current_user = resolution.context.current_user
-  #   change = Orgs.ProposalChange.get!(params.id, preload: :part)
-  #   # verify ownership
-  #   Orgs.Proposal.get!(change.part.proposal_id, proposer: current_user)
-  #   Orgs.ProposalChange.delete!(change)
-  #   {:ok, change}
-  # end
 end

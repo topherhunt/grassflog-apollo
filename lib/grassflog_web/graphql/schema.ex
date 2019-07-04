@@ -4,6 +4,7 @@ defmodule GrassflogWeb.Graphql.Schema do
   use Absinthe.Schema
   alias GrassflogWeb.Graphql.Resolvers
 
+  # Types for datetimes etc.
   import_types Absinthe.Type.Custom
   import_types GrassflogWeb.Graphql.Types
 

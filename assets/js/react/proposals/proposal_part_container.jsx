@@ -36,6 +36,7 @@ class ProposalPartContainer extends React.Component {
   }
 
   wrapInUpdatePartMutation() {
+    // Apollo should know how to update the cache; we don't need a custom updater
     return <Mutation mutation={updatePartMutation}>
       {(runUpdatePartMutation, {called, loading, data}) =>
         this.renderThisParticularPartType({runUpdatePartMutation})
@@ -73,11 +74,7 @@ class ProposalPartContainer extends React.Component {
       cachedData.proposal.parts.filter((part) => { return part.id != deletedPartId })
 
     // Write that transformed data to the cache (will leave alone any unreferenced fields)
-    cache.writeQuery({
-      query: proposalQuery,
-      variables: {id: proposalId},
-      data: cachedData
-    })
+    cache.writeQuery({query: proposalQuery, variables: {id: proposalId}, data: cachedData})
   }
 }
 

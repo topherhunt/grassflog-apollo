@@ -101,9 +101,7 @@ class CreateRolePart extends React.Component {
     const changesJson = JSON.stringify(changeList.changes)
     console.log("Saving ProposalPart "+partId+" with changes: ", changesJson)
     // Run the "Update ProposalPart" mutation func provided from ProposalPartContainer
-    this.props.runUpdatePartMutation({
-      variables: {id: this.props.part.id, changes_json: changesJson}
-    })
+    this.props.runUpdatePartMutation({variables: {id: partId, changes_json: changesJson}})
     // this.setState({updatePending: false})
   }
 
