@@ -29,15 +29,15 @@ The stack:
   * Elixir & Phoenix
   * GraphQL & Absinthe
   * React & Apollo
-  * Heroku. It's 2019 and I'm still using Heroku.
+  * Heroku. Yes it's 2019 and I'm still happy with Heroku.
 
 The approach I took:
 
-  * 1) Design the simplest possible schema that will sturdily solve (b) and (c)
-  * 2) Expose the simplest possible GraphQL fields to make change instructions writeable by the client.
-  * 3) Design a UI that will let the user indicate what changes they want to make (a) (I've mostly imitated the UI of existing tools like GlassFrog and HolaSpirit)
-  * 4) Figure out how to translate back and forth between the shape of the data in the UI (a form) and the shape of the data that needs to be sent to the server (a list of change instructions).
-  * I ended up with most of the conversion logic in the client and tried to ensure that GQL & the server only need to work with a very simple changes / instructions format
+  1) Design the simplest possible schema that will sturdily solve (b) and (c)
+  2) Expose the simplest possible GraphQL fields to make change instructions writeable by the client.
+  3) Design a UI that will let the user indicate what changes they want to make (a) (I've mostly imitated the UI of existing tools like GlassFrog and HolaSpirit)
+  4) Figure out how to translate back and forth between the shape of the data in the UI (a form) and the shape of the data that needs to be sent to the server (a list of change instructions).
+  5) I ended up with most of the conversion logic in the client and tried to ensure that GQL & the server only need to work with a very simple changes / instructions format.
 
 
 ## Architecture
