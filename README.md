@@ -1,5 +1,7 @@
 # Grassflog
 
+[![HitCount](http://hits.dwyl.com/topherhunt/grassflog-apollo.svg)](http://hits.dwyl.com/topherhunt/grassflog-apollo)
+
 
 ## The goal
 
