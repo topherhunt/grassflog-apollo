@@ -21,7 +21,7 @@
     "react-dom": "^16.8.6",
     "react-phoenix": "file:../deps/react_phoenix",
     "react-select": "^2.4.3",
-    "underscore": "^1.9.1"
+    "underscore": "^1.12.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
