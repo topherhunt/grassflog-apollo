@@ -6,45 +6,55 @@ import {createPartMutation, proposalQuery} from "../../apollo/queries"
 
 class AddProposalPart extends React.Component {
   render() {
+    return this.renderCreatePartMutationWrapper()
+  }
+
+  renderCreatePartMutationWrapper() {
     return <Mutation
       mutation={createPartMutation}
       update={this.updateCacheOnCreatePart.bind(this)}
     >
-      {(runCreatePartMutation, {called, loading, data}) => (
-        <div className="u-card u-box-shadow">
-          <h3>Change something</h3>
-          <p>Just as a reminder, the tension is: <em>{this.props.proposal.tension}</em></p>
-          <div className="row">
-            <div className="col-sm-4">
-              <Select
-                placeholder="Change a role..."
-                options={this.roleOptions()}
-                onChange={(selected) => {
-                  const roleId = parseInt(selected.value)
-                  runCreatePartMutation({variables: {
-                    proposalId: this.props.proposal.id,
-                    type: "update_role",
-                    targetId: roleId
-                  }})
-                }} />
-            </div>
-            <div className="col-sm-4">
-              <a
-                href="#"
-                className="btn btn-outline-primary"
-                onClick={(e) => {
-                  e.preventDefault()
-                  runCreatePartMutation({variables: {
-                    proposalId: this.props.proposal.id,
-                    type: "create_role"
-                  }})
-                }}
-              >Add a role</a>
-            </div>
-          </div>
-        </div>
-      )}
+      {(runCreatePartMutation, {called, loading, data}) => {
+        console.log("Rendering AddProposalPart with mutation data: ", data)
+        return this.renderMainContent({runCreatePartMutation})
+      }}
     </Mutation>
+  }
+
+  renderMainContent({runCreatePartMutation}) {
+    return <div className="u-card u-box-shadow">
+      <h3>Change something</h3>
+      <p>Just as a reminder, the tension is: <em>{this.props.proposal.tension}</em></p>
+      <div className="row">
+        <div className="col-sm-4">
+          <Select
+            placeholder="Change a role..."
+            options={this.roleOptions()}
+            onChange={(selected) => {
+              const roleId = parseInt(selected.value)
+              console.log("Running createPartMutation.")
+              runCreatePartMutation({variables: {
+                proposalId: this.props.proposal.id,
+                type: "update_role",
+                targetId: roleId
+              }})
+            }} />
+        </div>
+        <div className="col-sm-4">
+          <a
+            href="#"
+            className="btn btn-outline-primary"
+            onClick={(e) => {
+              e.preventDefault()
+              runCreatePartMutation({variables: {
+                proposalId: this.props.proposal.id,
+                type: "create_role"
+              }})
+            }}
+          >Add a role</a>
+        </div>
+      </div>
+    </div>
   }
 
   roleOptions() {

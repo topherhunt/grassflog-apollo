@@ -48,12 +48,13 @@ class ProposalPartContainer extends React.Component {
     let type = this.props.part.type
     let passedProps = {...this.props, runUpdatePartMutation}
 
-    if (type == "create_role") {
-      return <CreateRolePart {...passedProps} />
-    } else if (type == "update_role") {
-      return <UpdateRolePart {...passedProps} />
-    } else {
-      raise("Unknown ProposalPart type: "+type)
+    switch (type) {
+      case "create_role":
+        return <CreateRolePart {...passedProps} />
+      case "update_role":
+        return <UpdateRolePart {...passedProps} />
+      default:
+        raise("Unknown ProposalPart type: "+type)
     }
   }
 

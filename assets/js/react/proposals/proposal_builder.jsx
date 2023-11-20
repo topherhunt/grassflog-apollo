@@ -13,6 +13,10 @@ class ProposalBuilder extends React.Component {
     return <ApolloProvider client={client}>
       <Query query={proposalQuery} variables={{id: this.props.proposal_id}}>
         {({loading, error, data}) => {
+          console.log("Rendering ProposalBuilder with data: ", data)
+          if (data.proposal)
+            console.log("In particular, there are "+data.proposal.parts.length+" proposal parts.")
+
           if (loading) return this.renderLoading()
           else if (error) return this.renderError()
           else return this.renderProposalBuilder(data.proposal)
